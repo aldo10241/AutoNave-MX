@@ -1,6 +1,6 @@
 import { DB } from '../db.js';
-import { todayStr, addDays, money, formatDateShort, formatTime, el, escapeHtml } from '../utils.js';
-import { renderTopbar, emptyState } from '../ui.js';
+import { todayStr, addDays, formatDateShort, el } from '../utils.js';
+import { renderTopbar, emptyState, renderTicketRow } from '../ui.js';
 import { openCloseTicketSheet, openTicketDetailSheet } from './ticketModal.js';
 import { mountAd } from '../ads.js';
 
@@ -70,24 +70,10 @@ export function render(container, { navigate }) {
         lastDate = t.date;
         list.appendChild(el(`<div class="subtext" style="font-weight:800; margin-top:8px;">${formatDateShort(t.date)}</div>`));
       }
-      const card = el(`
-        <button class="ticket-card${t.status === 'closed' ? ' closed' : ''}" style="text-align:left; width:100%;">
-          <div class="emoji">${t.vehicleEmoji || '🚗'}</div>
-          <div class="info">
-            <div class="id">${escapeHtml(t.shortId)}${t.plate ? ' · ' + escapeHtml(t.plate) : ''}</div>
-            <div class="meta">${escapeHtml(t.vehicleTypeName)} · ${escapeHtml(t.washerName || 'Sin asignar')}</div>
-          </div>
-          <div class="right">
-            <div class="amount">${money(t.total)}</div>
-            <span class="badge ${t.status}">${t.status === 'open' ? 'Abierto' : formatTime(t.closedAt)}</span>
-          </div>
-        </button>
-      `);
-      card.addEventListener('click', () => {
-        if (t.status === 'open') openCloseTicketSheet(t, { onUpdated: refresh });
-        else openTicketDetailSheet(t);
-      });
-      list.appendChild(card);
+      list.appendChild(renderTicketRow(t, (ticket) => {
+        if (ticket.status === 'open') openCloseTicketSheet(ticket, { onUpdated: refresh });
+        else openTicketDetailSheet(ticket);
+      }));
     });
 
     mountAd(view.querySelector('#hi-ad'), 'history');

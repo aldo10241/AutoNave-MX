@@ -68,10 +68,10 @@ export function render(container, { navigate }) {
         <p class="subtext mb8">Total en caja</p>
         <h2 style="font-size:30px; font-weight:800;">${money(totalCaja)}</h2>
         <div class="divider"></div>
-        <div class="row"><span class="subtext">+ Reserva inicial</span><span style="color:#4ade80;">${money(reserve)}</span></div>
-        <div class="row"><span class="subtext">+ Cobros en efectivo</span><span style="color:#4ade80;">${money(cash)}</span></div>
-        <div class="row"><span class="subtext">− Propinas pago digital pagadas</span><span style="color:#f87171;">−${money(propinas)}</span></div>
-        <div class="row"><span class="subtext">− Gastos en efectivo</span><span style="color:#f87171;">−${money(gastos)}</span></div>
+        <div class="row"><span class="subtext">+ Reserva inicial</span><span style="color:var(--green); font-weight:800;">${money(reserve)}</span></div>
+        <div class="row"><span class="subtext">+ Cobros en efectivo</span><span style="color:var(--green); font-weight:800;">${money(cash)}</span></div>
+        <div class="row"><span class="subtext">− Propinas pago digital pagadas</span><span style="color:var(--red); font-weight:800;">−${money(propinas)}</span></div>
+        <div class="row"><span class="subtext">− Gastos en efectivo</span><span style="color:var(--red); font-weight:800;">−${money(gastos)}</span></div>
         <div class="divider"></div>
         <div class="row"><strong>Total efectivo en caja</strong><strong>${money(totalCaja)}</strong></div>
       </div>

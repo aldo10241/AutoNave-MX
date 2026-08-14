@@ -2,6 +2,7 @@ import { DB } from '../db.js';
 import { state } from '../store.js';
 import { uid, shortId, todayStr, money, toast, el, formatTime, shareOrOpenWhatsApp, openPrintableReceipt, escapeHtml } from '../utils.js';
 import { openSheet, closeSheet } from '../ui.js';
+import { getUserLabel } from '../auth.js';
 
 // ---------------------------------------------------------------------------
 // Nuevo ticket
@@ -79,7 +80,7 @@ export function openNewTicketSheet({ onCreated } = {}) {
       status: 'open',
       openedAt: new Date().toISOString(),
       closedAt: null,
-      openedBy: s.businessName || 'Admin',
+      openedBy: getUserLabel(),
       closedBy: null,
     };
     await DB.addTicket(ticket);
@@ -356,7 +357,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
     const updated = collectTicketUpdate();
     updated.status = 'closed';
     updated.closedAt = new Date().toISOString();
-    updated.closedBy = s.businessName || 'Admin';
+    updated.closedBy = getUserLabel();
     await DB.updateTicket(updated);
     toast('Ticket cerrado y cobrado', 'success');
     closeSheet();

@@ -1,7 +1,12 @@
 import { DB } from './db.js';
-import { setCurrencySymbol } from './utils.js';
+import { setCurrencySymbol, el } from './utils.js';
 import { state, setSettings } from './store.js';
+import { firebaseReady } from './firebase.js';
+import { onAuthChange } from './auth.js';
+import { initTheme } from './theme.js';
 
+import * as setupFirebase from './views/setupFirebase.js';
+import * as login from './views/login.js';
 import * as onboarding from './views/onboarding.js';
 import * as tickets from './views/tickets.js';
 import * as day from './views/day.js';
@@ -70,34 +75,67 @@ function renderBottomNav(activePath) {
   NAV_ITEMS.forEach((item) => {
     const btn = document.createElement('button');
     btn.className = activePath === item.path ? 'active' : '';
-    btn.innerHTML = `<span class="ic">${item.icon}</span><span>${item.label}</span>`;
+    btn.innerHTML = `<span class="ic">${item.icon}</span><span>${item.label}</span><span class="nav-dot"></span>`;
     btn.addEventListener('click', () => navigate(item.path));
     navEl.appendChild(btn);
   });
 }
 
-async function boot() {
-  let settings = await DB.getSettings();
+function showFullScreen(renderFn) {
+  navEl.style.display = 'none';
+  appEl.innerHTML = '';
+  renderFn(appEl);
+}
 
+function showLoadingScreen() {
+  navEl.style.display = 'none';
+  appEl.innerHTML = '';
+  appEl.appendChild(el(`
+    <div class="auth-screen">
+      <div class="loader-mark">🧽</div>
+    </div>
+  `));
+}
+
+let routerBound = false;
+
+async function enterApp(settings) {
+  setSettings(settings);
+  setCurrencySymbol(settings.currency);
+  if (!routerBound) {
+    window.addEventListener('hashchange', handleRoute);
+    routerBound = true;
+  }
+  handleRoute();
+}
+
+async function handleAuthedUser(user) {
+  let settings = await DB.getSettings();
   if (!settings || !settings.onboarded) {
-    navEl.style.display = 'none';
-    appEl.innerHTML = '';
-    onboarding.render(appEl, {
-      onDone: async (newSettings) => {
-        setSettings(newSettings);
-        setCurrencySymbol(newSettings.currency);
-        window.addEventListener('hashchange', handleRoute);
-        location.hash = '/tickets';
-        handleRoute();
-      },
+    showFullScreen((container) => {
+      onboarding.render(container, { onDone: (newSettings) => enterApp(newSettings) });
     });
     return;
   }
+  enterApp(settings);
+}
 
-  setSettings(settings);
-  setCurrencySymbol(settings.currency);
-  window.addEventListener('hashchange', handleRoute);
-  handleRoute();
+function boot() {
+  initTheme();
+
+  if (!firebaseReady) {
+    showFullScreen(setupFirebase.render);
+    return;
+  }
+
+  showLoadingScreen();
+  onAuthChange((user) => {
+    if (!user) {
+      showFullScreen(login.render);
+      return;
+    }
+    handleAuthedUser(user);
+  });
 }
 
 // Permite a cualquier vista refrescar el estado global tras editar Config.

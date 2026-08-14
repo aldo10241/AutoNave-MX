@@ -1,7 +1,7 @@
 // Service worker de Control Carwash Libre.
 // IMPORTANTE: sube este número cada vez que cambies archivos para forzar
 // la actualización del caché en los dispositivos de los usuarios.
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `carwash-libre-${CACHE_VERSION}`;
 
 const ASSETS = [
@@ -13,6 +13,15 @@ const ASSETS = [
   './js/db.js',
   './js/utils.js',
   './js/ads.js',
+  './js/store.js',
+  './js/ui.js',
+  './js/install.js',
+  './js/theme.js',
+  './js/firebase.js',
+  './js/firebaseConfig.js',
+  './js/auth.js',
+  './js/views/login.js',
+  './js/views/setupFirebase.js',
   './js/views/onboarding.js',
   './js/views/tickets.js',
   './js/views/ticketModal.js',

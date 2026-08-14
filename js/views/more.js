@@ -1,6 +1,8 @@
 import { state } from '../store.js';
 import { el } from '../utils.js';
 import { canInstall, promptInstall, isStandalone, isIos } from '../install.js';
+import { getCurrentUser, getUserLabel, logOut } from '../auth.js';
+import { getTheme, toggleTheme } from '../theme.js';
 
 const ITEMS = [
   { path: '/more/history', e: '🕘', t: 'Historial', d: 'Todos los tickets, filtra por fecha o placa' },
@@ -12,19 +14,42 @@ const ITEMS = [
 
 export function render(container, { navigate }) {
   const s = state.settings;
+  const user = getCurrentUser();
+
   const root = el(`
     <div>
-      <div class="topbar"><h1>${s.businessName || 'Más'}</h1><div class="spacer"></div></div>
+      <div class="topbar"><h1>${s.businessName || 'Más'}</h1><div class="spacer"></div>
+        <button class="action" id="theme-toggle" title="Cambiar tema">${getTheme() === 'dark' ? '☀️' : '🌙'}</button>
+      </div>
       <div class="view">
+        <div class="account-strip">
+          <div class="account-avatar">${(getUserLabel() || '?').charAt(0).toUpperCase()}</div>
+          <div style="flex:1; min-width:0;">
+            <div class="account-name">${getUserLabel()}</div>
+            <div class="account-email">${user?.email || ''}</div>
+          </div>
+          <button class="btn btn-outline btn-sm" id="logout-btn">Salir</button>
+        </div>
+
         <div id="install-slot"></div>
         <div class="menu-grid" id="menu-grid"></div>
-        <div class="card mt20 center">
-          <p class="subtext">Control Carwash Libre · gratis y de código abierto</p>
+        <div class="ticket-card" style="justify-content:center; margin-top:20px;">
+          <p class="subtext center" style="width:100%;">🚗💦 Control Carwash Libre · gratis y de código abierto</p>
         </div>
       </div>
     </div>
   `);
   container.appendChild(root);
+
+  root.querySelector('#theme-toggle').addEventListener('click', (e) => {
+    const mode = toggleTheme();
+    e.currentTarget.textContent = mode === 'dark' ? '☀️' : '🌙';
+  });
+
+  root.querySelector('#logout-btn').addEventListener('click', async () => {
+    if (!confirm('¿Cerrar sesión?')) return;
+    await logOut();
+  });
 
   const grid = root.querySelector('#menu-grid');
   ITEMS.forEach((item) => {

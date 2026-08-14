@@ -1,7 +1,7 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
-import { todayStr, money, formatTime, el, escapeHtml } from '../utils.js';
-import { emptyState } from '../ui.js';
+import { todayStr, money, el } from '../utils.js';
+import { emptyState, renderTicketRow } from '../ui.js';
 import { openNewTicketSheet, openCloseTicketSheet, openTicketDetailSheet } from './ticketModal.js';
 import { canInstall, promptInstall, isStandalone, onInstallAvailabilityChange } from '../install.js';
 
@@ -22,6 +22,11 @@ export function render(container) {
   });
 
   const unsubInstall = onInstallAvailabilityChange(() => refresh());
+
+  function openTicket(t) {
+    if (t.status === 'open') openCloseTicketSheet(t, { onUpdated: refresh });
+    else openTicketDetailSheet(t);
+  }
 
   async function refresh() {
     const date = todayStr();
@@ -77,7 +82,7 @@ export function render(container) {
     if (open.length === 0) {
       openList.innerHTML = emptyState('🚗', 'Sin tickets activos', 'Toca el botón + para registrar un nuevo lavado.');
     } else {
-      open.forEach((t) => openList.appendChild(renderTicketCard(t, refresh)));
+      open.forEach((t) => openList.appendChild(renderTicketRow(t, openTicket)));
     }
 
     if (closed.length) {
@@ -86,34 +91,10 @@ export function render(container) {
       const closedList = closedSection.querySelector('#closed-list');
       closed
         .sort((a, b) => new Date(b.closedAt) - new Date(a.closedAt))
-        .forEach((t) => closedList.appendChild(renderTicketCard(t, refresh)));
+        .forEach((t) => closedList.appendChild(renderTicketRow(t, openTicket)));
     }
   }
 
   refresh();
   return () => unsubInstall();
-}
-
-function renderTicketCard(t, onChange) {
-  const card = el(`
-    <button class="ticket-card${t.status === 'closed' ? ' closed' : ''}" style="text-align:left; width:100%;">
-      <div class="emoji">${t.vehicleEmoji || '🚗'}</div>
-      <div class="info">
-        <div class="id">${escapeHtml(t.shortId)}${t.plate ? ' · ' + escapeHtml(t.plate) : ''}</div>
-        <div class="meta">${escapeHtml(t.vehicleTypeName)} · ${escapeHtml(t.washerName || 'Sin asignar')}</div>
-      </div>
-      <div class="right">
-        <div class="amount">${money(t.total)}</div>
-        <span class="badge ${t.status}">${t.status === 'open' ? 'Abierto' : formatTime(t.closedAt)}</span>
-      </div>
-    </button>
-  `);
-  card.addEventListener('click', () => {
-    if (t.status === 'open') {
-      openCloseTicketSheet(t, { onUpdated: onChange });
-    } else {
-      openTicketDetailSheet(t);
-    }
-  });
-  return card;
 }

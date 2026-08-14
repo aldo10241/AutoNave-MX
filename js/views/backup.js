@@ -10,7 +10,7 @@ export function render(container, { navigate }) {
   const view = el(`
     <div class="view">
       <div class="card">
-        <p class="subtext mb12">Tus datos viven solo en este dispositivo/navegador (no hay servidor). Exporta seguido para tener un respaldo, o para moverte a otro celular.</p>
+        <p class="subtext mb12">Tus datos se guardan en tu cuenta (Firebase), no solo en este dispositivo. Aun así, exportar de vez en cuando te da un respaldo propio que puedes guardar donde quieras.</p>
         <button class="btn btn-primary" id="b-export">⬇️ Exportar datos (.json)</button>
       </div>
 
@@ -21,14 +21,14 @@ export function render(container, { navigate }) {
       </div>
 
       <div class="card" style="border-color:var(--red);">
-        <p class="subtext mb12">Esto elimina tickets, asistencia, gastos y configuración de este dispositivo de forma permanente.</p>
+        <p class="subtext mb12">Esto elimina tickets, asistencia, gastos y configuración de tu cuenta en la nube de forma permanente (no solo de este dispositivo).</p>
         <button class="btn btn-danger" id="b-wipe">🗑️ Borrar todos los datos</button>
       </div>
 
       <div class="card center">
         <p style="font-size:15px; font-weight:800;">🚗💦 Control Carwash Libre</p>
-        <p class="subtext mt8">App gratuita, sin cuentas ni suscripciones. Se mantiene con anuncios discretos en pantallas secundarias.</p>
-        <p class="subtext mt8">Tus datos son tuyos: quedan guardados en este dispositivo y puedes exportarlos cuando quieras.</p>
+        <p class="subtext mt8">App gratuita, sin suscripciones. Se mantiene con anuncios discretos en pantallas secundarias.</p>
+        <p class="subtext mt8">Tus datos son tuyos: quedan guardados en tu cuenta y puedes exportarlos cuando quieras.</p>
       </div>
     </div>
   `);

@@ -2,36 +2,43 @@
 
 App **gratuita y de código abierto** para gestionar un autolavado: tickets, caja, asistencia de trabajadores y estadísticas. Es una **PWA** (Progressive Web App): funciona en el navegador, se puede **instalar** en el celular o la computadora como si fuera una app nativa, y **sigue funcionando sin internet** una vez cargada.
 
-No usa frameworks ni npm/Node — es HTML, CSS y JavaScript "vanilla" (módulos ES). Esto significa que **no hay que compilar nada**: se sube tal cual a GitHub Pages y ya funciona. Los datos se guardan en el propio dispositivo del usuario (IndexedDB del navegador), no hay servidor ni base de datos que pagar.
+No usa frameworks ni npm/Node — es HTML, CSS y JavaScript "vanilla" (módulos ES). Esto significa que **no hay que compilar nada**: se sube tal cual a GitHub Pages y ya funciona. Cada dueño de carwash **crea su cuenta** (correo/contraseña o Google) y sus datos se guardan en su propia cuenta en la nube (Firebase, plan gratuito), así que puede entrar desde el celular, una tablet y la computadora del mostrador y ver siempre la misma información.
+
+El diseño es una identidad propia — "boleto de taller": papel cálido, tinta oscura, un acento ámbar y los tickets dibujados como boletos perforados de verdad. No es una copia de ninguna otra app.
 
 ## Qué incluye
 
+- **Login por cuenta**: correo/contraseña o Google. Tus datos quedan ligados a tu cuenta, no al dispositivo.
 - **Tickets**: abre un ticket al recibir un vehículo, agrega servicios adicionales y consumo extra al cerrarlo, cobra en efectivo/digital/mixto/crédito, comparte el comprobante por WhatsApp o imprímelo/guárdalo como PDF.
 - **Día**: desglose de caja (reserva + cobros − gastos − propinas), resumen del día, cierre de día.
 - **Asistencia**: marca entrada/salida de cada trabajador por día.
 - **Estadísticas**: totales por hoy/7 días/mes/rango personalizado, gráfico de los últimos 7 días, exportación a CSV (Excel).
 - **Historial**, **Trabajadores**, **Productos** y **Configuración** (tipos de vehículo y precios, servicios adicionales, moneda, reserva de caja).
 - **Copia de seguridad**: exporta/importa todos los datos en un archivo `.json`.
-- Instalable como app (Android/iOS/escritorio), funciona offline, e incluye espacios discretos para anuncios (ver más abajo).
+- **Modo claro/oscuro**, instalable como app (Android/iOS/escritorio), funciona offline gracias al caché local de Firestore, e incluye espacios discretos para anuncios (ver más abajo).
 
 ## Estructura del proyecto
 
 ```
 index.html              punto de entrada
 manifest.webmanifest     metadata de la PWA (nombre, ícono, colores)
-sw.js                    service worker (caché offline)
+sw.js                    service worker (caché offline del "cascarón" de la app)
 ads.txt                  para cuando actives Google AdSense
-css/styles.css           todos los estilos
+css/styles.css           todo el sistema de diseño ("boleto de taller")
 js/
-  app.js                 arranque + router (basado en # / hash)
-  db.js                  capa de datos (IndexedDB)
+  app.js                 arranque + router + control de sesión (login/onboarding/app)
+  firebaseConfig.js      tus claves de Firebase (las pegas tú, ver sección 2)
+  firebase.js            inicializa Firebase (Auth + Firestore con caché offline)
+  auth.js                login/registro/Google/logout/recuperar contraseña
+  db.js                  capa de datos (Firestore, organizado por usuario)
   store.js               estado compartido en memoria
-  ui.js                  helpers de interfaz (topbar, sheets/modales)
+  ui.js                  helpers de interfaz (topbar, sheets/modales, tarjeta de ticket)
   ads.js                 módulo de anuncios (AdSense)
   install.js             lógica de "instalar app"
-  utils.js                formateo, toasts, exportar CSV, etc.
-  views/                  una vista por pantalla (tickets, day, attendance, stats...)
-icons/                    íconos de la PWA (192, 512, maskable, apple-touch)
+  theme.js               preferencia de tema claro/oscuro
+  utils.js               formateo, toasts, exportar CSV, etc.
+  views/                 una vista por pantalla (login, tickets, day, attendance, stats...)
+icons/                   íconos de la PWA (192, 512, maskable, apple-touch)
 scripts/generate_icons.py regenera los íconos (opcional, requiere Python)
 .github/workflows/deploy.yml  despliegue automático a GitHub Pages
 ```
@@ -48,7 +55,51 @@ python -m http.server 8080
 
 Y abre `http://localhost:8080` en el navegador. También puedes usar la extensión "Live Server" de VS Code, o `npx serve` si tienes Node instalado.
 
-## 2. Subirlo a GitHub
+Mientras no hayas conectado Firebase (siguiente sección), verás una pantalla explicándote qué falta — es normal, no es un error.
+
+## 2. Login y datos en la nube (Firebase)
+
+La app usa **Firebase** (de Google) para el login y para guardar los datos: es gratis para un proyecto de este tamaño (plan **Spark**, sin tarjeta de crédito), no requiere que mantengas un servidor, y funciona perfecto sirviendo el resto de la app como archivos estáticos en GitHub Pages.
+
+### 2.1 Crear el proyecto
+
+1. Entra a [console.firebase.google.com](https://console.firebase.google.com) con tu cuenta de Google → **Agregar proyecto** → dale un nombre (ej. "carwash-libre") → puedes desactivar Google Analytics, no lo necesitas.
+2. Dentro del proyecto, click en el ícono **`</>`** ("Web") para agregar una app web → dale un apodo → **no** hace falta marcar "Firebase Hosting" (usarás GitHub Pages) → Registrar app.
+3. Firebase te muestra un bloque de código con un objeto `firebaseConfig = {...}`. Copia esos valores y pégalos en [js/firebaseConfig.js](js/firebaseConfig.js), reemplazando el objeto de ejemplo.
+
+### 2.2 Activar el login
+
+1. Menú lateral → **Authentication** → **Comenzar** (Get started).
+2. Pestaña **Sign-in method** → activa **Correo electrónico/contraseña**.
+3. En la misma pestaña, activa **Google** → elige un correo de soporte → Guardar.
+4. Cuando despliegues en GitHub Pages, ve a **Authentication → Settings → Authorized domains** y agrega tu dominio (`tuusuario.github.io`) — si no, el botón de Google fallará con "unauthorized-domain".
+
+### 2.3 Activar la base de datos (Firestore)
+
+1. Menú lateral → **Firestore Database** → **Crear base de datos** → modo **producción** → elige la región más cercana a tus usuarios.
+2. Ve a la pestaña **Reglas** y reemplaza todo por esto (cada quien solo puede leer/escribir sus propios datos):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      match /{collection}/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+  }
+}
+```
+
+3. **Publicar**.
+
+Con esto ya puedes recargar la app local (`python -m http.server 8080`), crear una cuenta y usarla. Los límites gratuitos de Firestore (Spark) son generosos para un carwash: ~50,000 lecturas y ~20,000 escrituras al día, 1 GB de almacenamiento — normalmente no se acercan a eso.
+
+> Si quieres que varios empleados usen la misma cuenta (una sola caja compartida), simplemente inicien sesión todos con el mismo correo y contraseña. El "login por usuario" de esta app está pensado para un dueño/negocio por cuenta, no para roles distintos por empleado (eso quedaría como mejora futura).
+
+## 3. Subirlo a GitHub
 
 1. Crea una cuenta en [github.com](https://github.com) si no tienes una.
 2. Crea un repositorio nuevo (botón **New repository**). Puede ser público (necesario para GitHub Pages gratis, salvo que tengas plan de pago) — por ejemplo `carwash-libre`. No marques "Add a README" (ya tienes uno).
@@ -65,7 +116,7 @@ git push -u origin main
 
 (Reemplaza `TU-USUARIO/carwash-libre` por la URL real de tu repositorio.)
 
-## 3. Desplegarlo con GitHub Pages
+## 4. Desplegarlo con GitHub Pages
 
 Este proyecto ya incluye `.github/workflows/deploy.yml`, que despliega automáticamente cada vez que subes cambios a la rama `main`. Solo falta activarlo:
 
@@ -81,7 +132,7 @@ Cada vez que hagas `git push` a `main`, el sitio se actualiza solo.
 
 Si prefieres no usar el workflow: Settings → Pages → Source → **Deploy from a branch** → rama `main`, carpeta `/ (root)`. Funciona igual de bien para este proyecto porque no hay build.
 
-## 4. Instalar la app en el celular (PWA)
+## 5. Instalar la app en el celular (PWA)
 
 Una vez publicada:
 
@@ -89,11 +140,11 @@ Una vez publicada:
 - **iPhone (Safari)**: entra al sitio → botón compartir (cuadrito con flecha) → **"Agregar a pantalla de inicio"**. iOS no permite instalar PWAs desde otros navegadores, tiene que ser Safari.
 - **Escritorio (Chrome/Edge)**: ícono de instalar en la barra de direcciones, o menú → "Instalar Control Carwash Libre".
 
-Después de instalada, abre igual que cualquier app y funciona sin conexión (excepto los anuncios, que necesitan internet para mostrarse).
+Después de instalada, abre igual que cualquier app y funciona sin conexión — el service worker cachea el "cascarón" (HTML/CSS/JS) y Firestore cachea tus datos localmente; todo se sincroniza solo al recuperar internet (excepto el primer login, que sí necesita conexión, y los anuncios).
 
 > **Importante:** actualiza el número `CACHE_VERSION` al inicio de `sw.js` cada vez que subas cambios importantes. Así el service worker sabe que debe descargar la versión nueva en vez de seguir usando la copia guardada en el celular de tus usuarios.
 
-## 5. Monetización con anuncios (Google AdSense)
+## 6. Monetización con anuncios (Google AdSense)
 
 La app ya trae listo el "enchufe" para anuncios discretos (`js/ads.js`), colocados **solo** en pantallas secundarias: Estadísticas, Historial y Configuración — nunca en el flujo de abrir/cerrar tickets, y nunca como pantallas completas ni pop-ups.
 
@@ -115,19 +166,18 @@ Mientras `ADSENSE_CLIENT` conserve el valor de ejemplo, la app **no carga ningú
 - [Carbon Ads](https://www.carbonads.net/) o [BuySellAds](https://www.buysellads.com/): redes más pequeñas, suelen aprobar más rápido.
 - Un simple banner de "apóyanos" con enlace a Ko-fi / Buy Me a Coffee mientras consigues aprobación (puedes reemplazar temporalmente el contenido de `mountAd()` en `js/ads.js`).
 
-## 6. Personalizarlo
+## 7. Personalizarlo
 
 - **Nombre e ícono**: edita `manifest.webmanifest` (`name`, `short_name`, `theme_color`) y vuelve a generar los íconos con `python scripts/generate_icons.py` después de ajustar los colores en ese script, o reemplaza directamente los archivos en `icons/` por tu propio logo (mismos nombres y tamaños: 192×192, 512×512, 512×512 maskable, 180×180 para iOS).
-- **Colores**: variables CSS al inicio de `css/styles.css` (`--brand`, `--brand-2`, etc.).
+- **Colores y estilo**: variables CSS al inicio de `css/styles.css` (`--bg`, `--accent`, `--ink`, etc. — hay un bloque para modo claro y otro para oscuro).
 - **Datos de ejemplo al primer uso**: `js/views/onboarding.js` (tipos de vehículo, servicios y trabajadores por defecto).
 
-## 7. Limitaciones actuales (honestidad ante todo)
+## 8. Limitaciones actuales (honestidad ante todo)
 
-- **Un dispositivo = una caja.** No hay sincronización en la nube ni login multiusuario real: cada celular/computadora guarda sus propios datos. Para varias cajas o sucursales, cada una necesitaría su propio dispositivo y llevarías los reportes por separado (o exportar/importar JSON manualmente).
-- Si borras los datos del navegador (o desinstalas la app) sin haber exportado un respaldo, se pierde la información. Usa **Más → Copia de seguridad** seguido.
+- **Un dueño = una caja compartida.** Todos los que inicien sesión con la misma cuenta ven los mismos datos; no hay roles distintos por empleado (todos tienen los mismos permisos). Para varias sucursales necesitarías una cuenta por sucursal.
+- El plan gratuito de Firebase (Spark) tiene límites diarios generosos pero reales (lecturas/escrituras/almacenamiento). Un carwash normal no se acerca a ellos, pero si creces mucho revisa el panel de uso en Firebase Console.
+- Si alguna vez quieres borrar tu cuenta de Firebase también deberás borrar los datos del usuario en Firestore (o usar **Más → Copia de seguridad → Borrar todos los datos** antes) — Firebase Authentication y Firestore son productos separados.
 - El inventario de "Productos" no descuenta stock automáticamente al vender — es solo una lista de precios para agilizar la carga de consumo adicional.
-
-Si más adelante quieres sincronización multi-dispositivo real, la app está lista para conectarse a un backend (ej. Firebase o Supabase) sin rehacer la interfaz: solo habría que sustituir `js/db.js` por llamadas a esa API.
 
 ## Licencia
 

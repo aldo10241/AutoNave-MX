@@ -1,169 +1,115 @@
-// Capa de datos: IndexedDB envuelto en promesas. Sin librerías externas.
-// Todo vive en el navegador del dispositivo (no hay servidor ni nube).
+// Capa de datos: Firestore (nube de Firebase), organizado por usuario:
+//   users/{uid}                      → documento con la configuración (settings)
+//   users/{uid}/tickets/{id}
+//   users/{uid}/attendance/{id}
+//   users/{uid}/expenses/{id}
+//   users/{uid}/days/{date}
+// Mantiene la misma API que la versión anterior basada en IndexedDB para que
+// las vistas no tengan que cambiar. Incluye caché local persistente (ver
+// js/firebase.js), así que sigue funcionando sin internet y se sincroniza
+// sola al reconectar.
+import { db } from './firebase.js';
+import { getUid } from './auth.js';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  writeBatch,
+} from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
 
-const DB_NAME = 'carwash-libre-db';
-const DB_VERSION = 1;
-
-let dbPromise = null;
-
-function openDB() {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('settings')) {
-        db.createObjectStore('settings', { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains('tickets')) {
-        const s = db.createObjectStore('tickets', { keyPath: 'id' });
-        s.createIndex('date', 'date');
-        s.createIndex('status', 'status');
-      }
-      if (!db.objectStoreNames.contains('attendance')) {
-        const s = db.createObjectStore('attendance', { keyPath: 'id' });
-        s.createIndex('date', 'date');
-      }
-      if (!db.objectStoreNames.contains('expenses')) {
-        const s = db.createObjectStore('expenses', { keyPath: 'id' });
-        s.createIndex('date', 'date');
-      }
-      if (!db.objectStoreNames.contains('days')) {
-        db.createObjectStore('days', { keyPath: 'date' });
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-  return dbPromise;
+function uid() {
+  const u = getUid();
+  if (!u) throw new Error('No hay sesión activa');
+  return u;
 }
-
-function tx(storeNames, mode, fn) {
-  return openDB().then(
-    (db) =>
-      new Promise((resolve, reject) => {
-        const t = db.transaction(storeNames, mode);
-        let result;
-        Promise.resolve(fn(t)).then((r) => (result = r));
-        t.oncomplete = () => resolve(result);
-        t.onerror = () => reject(t.error);
-        t.onabort = () => reject(t.error);
-      })
-  );
+function userDocRef() {
+  return doc(db, 'users', uid());
 }
-
-function reqToPromise(req) {
-  return new Promise((resolve, reject) => {
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+function colRef(name) {
+  return collection(db, 'users', uid(), name);
 }
-
-function cursorAll(index, range) {
-  return new Promise((resolve, reject) => {
-    const out = [];
-    const req = range ? index.openCursor(range) : index.openCursor();
-    req.onsuccess = (e) => {
-      const cursor = e.target.result;
-      if (cursor) {
-        out.push(cursor.value);
-        cursor.continue();
-      } else {
-        resolve(out);
-      }
-    };
-    req.onerror = () => reject(req.error);
-  });
+async function docsOf(q) {
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data());
 }
 
 export const DB = {
   // ---------- settings ----------
   async getSettings() {
-    return tx('settings', 'readonly', (t) => reqToPromise(t.objectStore('settings').get('main')));
+    const snap = await getDoc(userDocRef());
+    return snap.exists() ? snap.data() : null;
   },
   async saveSettings(settings) {
-    settings.id = 'main';
-    return tx('settings', 'readwrite', (t) => reqToPromise(t.objectStore('settings').put(settings)));
+    await setDoc(userDocRef(), settings);
   },
 
   // ---------- tickets ----------
   async addTicket(ticket) {
-    return tx('tickets', 'readwrite', (t) => reqToPromise(t.objectStore('tickets').add(ticket)));
+    await setDoc(doc(colRef('tickets'), ticket.id), ticket);
   },
   async updateTicket(ticket) {
-    return tx('tickets', 'readwrite', (t) => reqToPromise(t.objectStore('tickets').put(ticket)));
+    await setDoc(doc(colRef('tickets'), ticket.id), ticket);
   },
   async deleteTicket(id) {
-    return tx('tickets', 'readwrite', (t) => reqToPromise(t.objectStore('tickets').delete(id)));
+    await deleteDoc(doc(colRef('tickets'), id));
   },
   async getTicket(id) {
-    return tx('tickets', 'readonly', (t) => reqToPromise(t.objectStore('tickets').get(id)));
+    const snap = await getDoc(doc(colRef('tickets'), id));
+    return snap.exists() ? snap.data() : null;
   },
   async getTicketsByDate(date) {
-    return tx('tickets', 'readonly', (t) => {
-      const idx = t.objectStore('tickets').index('date');
-      return cursorAll(idx, IDBKeyRange.only(date));
-    });
+    return docsOf(query(colRef('tickets'), where('date', '==', date)));
   },
   async getTicketsInRange(startDate, endDate) {
-    return tx('tickets', 'readonly', (t) => {
-      const idx = t.objectStore('tickets').index('date');
-      return cursorAll(idx, IDBKeyRange.bound(startDate, endDate));
-    });
+    return docsOf(query(colRef('tickets'), where('date', '>=', startDate), where('date', '<=', endDate)));
   },
   async getOpenTickets() {
-    return tx('tickets', 'readonly', (t) => {
-      const idx = t.objectStore('tickets').index('status');
-      return cursorAll(idx, IDBKeyRange.only('open'));
-    });
+    return docsOf(query(colRef('tickets'), where('status', '==', 'open')));
   },
   async getAllTickets() {
-    return tx('tickets', 'readonly', (t) => reqToPromise(t.objectStore('tickets').getAll()));
+    return docsOf(colRef('tickets'));
   },
 
   // ---------- attendance ----------
   async upsertAttendance(record) {
-    return tx('attendance', 'readwrite', (t) => reqToPromise(t.objectStore('attendance').put(record)));
+    await setDoc(doc(colRef('attendance'), record.id), record);
   },
   async getAttendanceByDate(date) {
-    return tx('attendance', 'readonly', (t) => {
-      const idx = t.objectStore('attendance').index('date');
-      return cursorAll(idx, IDBKeyRange.only(date));
-    });
+    return docsOf(query(colRef('attendance'), where('date', '==', date)));
   },
   async getAllAttendance() {
-    return tx('attendance', 'readonly', (t) => reqToPromise(t.objectStore('attendance').getAll()));
+    return docsOf(colRef('attendance'));
   },
 
   // ---------- expenses ----------
   async addExpense(expense) {
-    return tx('expenses', 'readwrite', (t) => reqToPromise(t.objectStore('expenses').add(expense)));
+    await setDoc(doc(colRef('expenses'), expense.id), expense);
   },
   async deleteExpense(id) {
-    return tx('expenses', 'readwrite', (t) => reqToPromise(t.objectStore('expenses').delete(id)));
+    await deleteDoc(doc(colRef('expenses'), id));
   },
   async getExpensesByDate(date) {
-    return tx('expenses', 'readonly', (t) => {
-      const idx = t.objectStore('expenses').index('date');
-      return cursorAll(idx, IDBKeyRange.only(date));
-    });
+    return docsOf(query(colRef('expenses'), where('date', '==', date)));
   },
   async getExpensesInRange(startDate, endDate) {
-    return tx('expenses', 'readonly', (t) => {
-      const idx = t.objectStore('expenses').index('date');
-      return cursorAll(idx, IDBKeyRange.bound(startDate, endDate));
-    });
+    return docsOf(query(colRef('expenses'), where('date', '>=', startDate), where('date', '<=', endDate)));
   },
 
   // ---------- days ----------
   async getDay(date) {
-    return tx('days', 'readonly', (t) => reqToPromise(t.objectStore('days').get(date)));
+    const snap = await getDoc(doc(colRef('days'), date));
+    return snap.exists() ? snap.data() : null;
   },
   async saveDay(day) {
-    return tx('days', 'readwrite', (t) => reqToPromise(t.objectStore('days').put(day)));
+    await setDoc(doc(colRef('days'), day.date), day);
   },
   async getAllDays() {
-    return tx('days', 'readonly', (t) => reqToPromise(t.objectStore('days').getAll()));
+    return docsOf(colRef('days'));
   },
 
   // ---------- backup ----------
@@ -172,43 +118,28 @@ export const DB = {
       this.getSettings(),
       this.getAllTickets(),
       this.getAllAttendance(),
-      tx('expenses', 'readonly', (t) => reqToPromise(t.objectStore('expenses').getAll())),
+      docsOf(colRef('expenses')),
       this.getAllDays(),
     ]);
-    return {
-      exportedAt: new Date().toISOString(),
-      version: 1,
-      settings,
-      tickets,
-      attendance,
-      expenses,
-      days,
-    };
+    return { exportedAt: new Date().toISOString(), version: 2, settings, tickets, attendance, expenses, days };
   },
   async importAll(data) {
-    return tx(
-      ['settings', 'tickets', 'attendance', 'expenses', 'days'],
-      'readwrite',
-      (t) => {
-        if (data.settings) t.objectStore('settings').put(data.settings);
-        (data.tickets || []).forEach((r) => t.objectStore('tickets').put(r));
-        (data.attendance || []).forEach((r) => t.objectStore('attendance').put(r));
-        (data.expenses || []).forEach((r) => t.objectStore('expenses').put(r));
-        (data.days || []).forEach((r) => t.objectStore('days').put(r));
-      }
-    );
+    const ops = [];
+    if (data.settings) ops.push(setDoc(userDocRef(), data.settings));
+    (data.tickets || []).forEach((r) => ops.push(setDoc(doc(colRef('tickets'), r.id), r)));
+    (data.attendance || []).forEach((r) => ops.push(setDoc(doc(colRef('attendance'), r.id), r)));
+    (data.expenses || []).forEach((r) => ops.push(setDoc(doc(colRef('expenses'), r.id), r)));
+    (data.days || []).forEach((r) => ops.push(setDoc(doc(colRef('days'), r.date), r)));
+    await Promise.all(ops);
   },
   async wipeAll() {
-    return tx(
-      ['settings', 'tickets', 'attendance', 'expenses', 'days'],
-      'readwrite',
-      (t) => {
-        t.objectStore('settings').clear();
-        t.objectStore('tickets').clear();
-        t.objectStore('attendance').clear();
-        t.objectStore('expenses').clear();
-        t.objectStore('days').clear();
-      }
-    );
+    for (const name of ['tickets', 'attendance', 'expenses', 'days']) {
+      const snap = await getDocs(colRef(name));
+      if (snap.empty) continue;
+      const batch = writeBatch(db);
+      snap.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+    await deleteDoc(userDocRef());
   },
 };

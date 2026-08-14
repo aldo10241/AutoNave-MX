@@ -57,7 +57,7 @@ export function render(container, { navigate }) {
       <div id="c-ad"></div>
 
       <div class="section-title">Zona de peligro</div>
-      <button class="btn btn-outline" id="c-goto-backup" style="border-color:var(--red); color:#f87171;">Borrar todos los datos</button>
+      <button class="btn btn-outline" id="c-goto-backup" style="border-color:var(--red); color:var(--red);">Borrar todos los datos</button>
     `));
 
     // nombre / moneda / reserva
