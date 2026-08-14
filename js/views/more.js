@@ -8,7 +8,7 @@ const ITEMS = [
   { path: '/more/history', e: '🕘', t: 'Historial', d: 'Todos los tickets, filtra por fecha o placa' },
   { path: '/more/workers', e: '👷', t: 'Trabajadores', d: 'Agrega y administra tu equipo' },
   { path: '/more/products', e: '📦', t: 'Productos', d: 'Consumo adicional y precios' },
-  { path: '/more/config', e: '⚙️', t: 'Configuración', d: 'Vehículos, servicios, caja, moneda' },
+  { path: '/more/config', e: '⚙️', t: 'Configuración', d: 'Vehículos, servicios, caja' },
   { path: '/more/backup', e: '💾', t: 'Copia de seguridad', d: 'Exporta o restaura tus datos' },
 ];
 

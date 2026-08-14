@@ -1,5 +1,5 @@
 import { DB } from './db.js';
-import { setCurrencySymbol, el } from './utils.js';
+import { el } from './utils.js';
 import { state, setSettings } from './store.js';
 import { firebaseReady } from './firebase.js';
 import { onAuthChange } from './auth.js';
@@ -75,7 +75,7 @@ function renderBottomNav(activePath) {
   NAV_ITEMS.forEach((item) => {
     const btn = document.createElement('button');
     btn.className = activePath === item.path ? 'active' : '';
-    btn.innerHTML = `<span class="ic">${item.icon}</span><span>${item.label}</span><span class="nav-dot"></span>`;
+    btn.innerHTML = `<span class="ic">${item.icon}</span><span class="nav-label">${item.label}</span>`;
     btn.addEventListener('click', () => navigate(item.path));
     navEl.appendChild(btn);
   });
@@ -101,7 +101,6 @@ let routerBound = false;
 
 async function enterApp(settings) {
   setSettings(settings);
-  setCurrencySymbol(settings.currency);
   if (!routerBound) {
     window.addEventListener('hashchange', handleRoute);
     routerBound = true;
@@ -142,7 +141,6 @@ function boot() {
 export async function reloadSettings() {
   const settings = await DB.getSettings();
   setSettings(settings);
-  setCurrencySymbol(settings.currency);
   return settings;
 }
 

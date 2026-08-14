@@ -13,7 +13,7 @@ El diseño es una identidad propia — "boleto de taller": papel cálido, tinta 
 - **Día**: desglose de caja (reserva + cobros − gastos − propinas), resumen del día, cierre de día.
 - **Asistencia**: marca entrada/salida de cada trabajador por día.
 - **Estadísticas**: totales por hoy/7 días/mes/rango personalizado, gráfico de los últimos 7 días, exportación a CSV (Excel).
-- **Historial**, **Trabajadores**, **Productos** y **Configuración** (tipos de vehículo y precios, servicios adicionales, moneda, reserva de caja).
+- **Historial**, **Trabajadores**, **Productos** y **Configuración** (tipos de vehículo y precios, servicios adicionales, reserva de caja). Todos los montos se muestran en **pesos mexicanos (MXN)**.
 - **Copia de seguridad**: exporta/importa todos los datos en un archivo `.json`.
 - **Modo claro/oscuro**, instalable como app (Android/iOS/escritorio), funciona offline gracias al caché local de Firestore, e incluye espacios discretos para anuncios (ver más abajo).
 

@@ -42,13 +42,14 @@ export function formatTime(iso) {
   return dt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 }
 
-let currencySymbol = '$';
-export function setCurrencySymbol(sym) {
-  currencySymbol = sym || '$';
-}
+// La app trabaja únicamente en pesos mexicanos (MXN).
+const pesoFormatter = new Intl.NumberFormat('es-MX', {
+  style: 'currency',
+  currency: 'MXN',
+  minimumFractionDigits: 2,
+});
 export function money(n) {
-  const v = Number(n) || 0;
-  return `${currencySymbol} ${v.toFixed(2)}`;
+  return pesoFormatter.format(Number(n) || 0);
 }
 
 export function escapeHtml(str) {

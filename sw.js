@@ -1,7 +1,7 @@
 // Service worker de Control Carwash Libre.
 // IMPORTANTE: sube este número cada vez que cambies archivos para forzar
 // la actualización del caché en los dispositivos de los usuarios.
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `carwash-libre-${CACHE_VERSION}`;
 
 const ASSETS = [

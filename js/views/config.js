@@ -1,12 +1,11 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
-import { uid, money, toast, el, escapeHtml, setCurrencySymbol } from '../utils.js';
+import { uid, money, toast, el, escapeHtml } from '../utils.js';
 import { renderTopbar, openSheet, closeSheet } from '../ui.js';
 import { reloadSettings } from '../app.js';
 import { mountAd } from '../ads.js';
 
 const EMOJI_CHOICES = ['🏍️', '🚗', '🚙', '🚐', '🚚', '🚌', '🚲', '🚕', '🚓', '🚑', '🚒', '🛵', '⛵', '🚜', '🚘', '🚖'];
-const CURRENCIES = ['$', 'S/', '€', 'Bs', 'MX$', 'Q', 'L', '₡', '£', 'RD$'];
 
 export function render(container, { navigate }) {
   const root = el(`<div></div>`);
@@ -18,7 +17,6 @@ export function render(container, { navigate }) {
   async function persist() {
     await DB.saveSettings(state.settings);
     await reloadSettings();
-    setCurrencySymbol(state.settings.currency);
   }
 
   function draw() {
@@ -28,9 +26,6 @@ export function render(container, { navigate }) {
     view.appendChild(el(`
       <div class="section-title">Datos del negocio</div>
       <div class="field"><label>Nombre</label><input id="c-name" type="text" value="${escapeHtml(s.businessName)}" /></div>
-      <div class="field"><label>Moneda</label><div class="pill-row" id="c-currency">
-        ${CURRENCIES.map((c) => `<button type="button" class="pill${c === s.currency ? ' selected' : ''}" data-c="${c}">${c}</button>`).join('')}
-      </div></div>
 
       <div class="section-title">Reserva de caja</div>
       <p class="subtext mb8">Monto inicial que dejas en caja para tener cambio cada día.</p>
@@ -60,14 +55,8 @@ export function render(container, { navigate }) {
       <button class="btn btn-outline" id="c-goto-backup" style="border-color:var(--red); color:var(--red);">Borrar todos los datos</button>
     `));
 
-    // nombre / moneda / reserva
+    // nombre / reserva
     view.querySelector('#c-name').addEventListener('change', async (e) => { s.businessName = e.target.value.trim(); await persist(); });
-    view.querySelectorAll('#c-currency .pill').forEach((p) => p.addEventListener('click', async () => {
-      view.querySelectorAll('#c-currency .pill').forEach((x) => x.classList.remove('selected'));
-      p.classList.add('selected');
-      s.currency = p.dataset.c;
-      await persist();
-    }));
     view.querySelector('#c-reserve').addEventListener('change', async (e) => { s.cashReserve = Number(e.target.value) || 0; await persist(); });
 
     // tipos de vehículo

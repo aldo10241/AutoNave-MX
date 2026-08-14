@@ -29,7 +29,8 @@
   --radius:18px;
   --radius-sm:12px;
   --press:3px;
-  --nav-h:66px;
+  --nav-h:78px;
+  --nav-pop:9px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   color-scheme: light;
@@ -259,21 +260,34 @@ button.ticket-card:active{ transform:translate(var(--press), var(--press)); box-
 .empty h3{color:var(--ink); margin-bottom:6px; font-size:16px; font-weight:800;}
 .empty p{font-size:14px; line-height:1.5;}
 
-/* ---------- navegación inferior ---------- */
+/* ---------- navegación: muelle de talones (no es una barra de íconos) ---
+   Cada destino es su propio botón con forma de talón (esquinas superiores
+   redondeadas, borde y sombra propios). El de la sección activa se separa
+   del resto y "sale" hacia arriba, como una ficha levantada de un fajo. --- */
 .bottom-nav{
   position:fixed; left:0; right:0; bottom:0; z-index:30;
-  background:var(--surface); border-top:3px solid var(--line);
-  display:flex; padding-bottom: var(--safe-b);
+  background:var(--bg);
+  display:flex; align-items:flex-end; gap:6px;
+  padding: 10px 8px calc(6px + var(--safe-b));
+  height: var(--nav-h);
 }
 .bottom-nav button{
-  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
-  padding:10px 4px 8px; font-size:10.5px; font-weight:800; color:var(--ink-faint);
-  position:relative;
+  flex:1; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  padding-bottom:2px;
+  background:var(--surface); border:2px solid var(--line); border-radius:13px 13px 7px 7px;
+  color:var(--ink-dim); font-size:9.5px; font-weight:800;
+  box-shadow: 2px 2px 0 0 var(--line);
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease, color .12s ease;
 }
-.bottom-nav button .ic{ font-size:19px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:9px; transition:.12s; }
-.bottom-nav button .nav-dot{ display:none; }
-.bottom-nav button.active{ color:var(--ink); }
-.bottom-nav button.active .ic{ background:var(--accent); border:1.5px solid var(--line); box-shadow:2px 2px 0 0 var(--line); }
+.bottom-nav button .ic{ font-size:18px; line-height:1; }
+.bottom-nav button .nav-label{ letter-spacing:.01em; }
+.bottom-nav button.active{
+  background:var(--accent); color:var(--accent-ink); border-color:var(--line);
+  transform:translateY(calc(-1 * var(--nav-pop)));
+  box-shadow: 3px 4px 0 0 var(--line);
+}
+.bottom-nav button:active{ transform:translateY(2px); box-shadow:1px 1px 0 0 var(--line); }
+.bottom-nav button.active:active{ transform:translateY(calc(-1 * var(--nav-pop) + 2px)); }
 
 .fab{
   position:fixed; right:18px; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index:25;

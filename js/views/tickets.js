@@ -68,14 +68,7 @@ export function render(container) {
       </div>
     `));
 
-    viewEl.appendChild(el(`
-      <div class="section-title">Caja en tiempo real</div>
-      <div class="grid-2">
-        <div class="stat-card green"><div class="icon">💵</div><div class="label">Efectivo</div><div class="value">${money(cash)}</div></div>
-        <div class="stat-card purple"><div class="icon">📱</div><div class="label">Pago digital</div><div class="value">${money(digital)}</div></div>
-      </div>
-    `));
-
+    // Lo accionable primero: los vehículos que siguen en el patio.
     const activeSection = el(`<div><div class="section-title">Tickets activos (${open.length})</div><div class="list" id="open-list"></div></div>`);
     viewEl.appendChild(activeSection);
     const openList = activeSection.querySelector('#open-list');
@@ -84,6 +77,14 @@ export function render(container) {
     } else {
       open.forEach((t) => openList.appendChild(renderTicketRow(t, openTicket)));
     }
+
+    viewEl.appendChild(el(`
+      <div class="section-title">Caja en tiempo real</div>
+      <div class="grid-2">
+        <div class="stat-card green"><div class="icon">💵</div><div class="label">Efectivo</div><div class="value">${money(cash)}</div></div>
+        <div class="stat-card purple"><div class="icon">📱</div><div class="label">Pago digital</div><div class="value">${money(digital)}</div></div>
+      </div>
+    `));
 
     if (closed.length) {
       const closedSection = el(`<div><div class="section-title">Historial de hoy (${closed.length})</div><div class="list" id="closed-list"></div></div>`);
