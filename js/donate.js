@@ -10,7 +10,7 @@
 //
 // Mientras DONATION_URL siga vacío, el botón no aparece (no molesta a nadie).
 
-export const DONATION_URL = '';
+export const DONATION_URL = 'https://donate.stripe.com/dRm7sMbNqept1zX9ewa3u00';
 
 export function isDonationConfigured() {
   return !!DONATION_URL && DONATION_URL.startsWith('http');

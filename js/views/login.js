@@ -48,7 +48,7 @@ export function render(container) {
           <button class="btn btn-google" id="auth-google">${GOOGLE_ICON}<span>Continuar con Google</span></button>
         </div>
 
-        <p class="subtext center mt16">Al continuar aceptas que tus datos del negocio se guarden en tu cuenta para poder verlos desde cualquier dispositivo.</p>
+        <p class="subtext center mt16">Al continuar aceptas nuestro <a href="privacidad.html">aviso de privacidad</a> y <a href="terminos.html">términos de uso</a>.</p>
       </div>
     </div>
   `);

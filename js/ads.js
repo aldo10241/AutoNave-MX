@@ -13,7 +13,7 @@
 
 import { state } from './store.js';
 
-export const ADSENSE_CLIENT = 'ca-pub-0000000000000000';
+export const ADSENSE_CLIENT = 'ca-pub-4998727818500192';
 
 export const AD_SLOTS = {
   stats: '0000000000',

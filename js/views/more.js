@@ -54,6 +54,7 @@ export function render(container, { navigate }) {
 
         <div class="card center" style="margin-top:${(s.donorAdFree || isDonationConfigured()) ? '12px' : '20px'};">
           <p class="subtext center">AutoNave MX · gratis y de código abierto</p>
+          <p class="subtext center mt8"><a href="privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a> · <a href="terminos.html" target="_blank" rel="noopener">Términos de uso</a></p>
         </div>
       </div>
     </div>

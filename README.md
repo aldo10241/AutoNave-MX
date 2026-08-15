@@ -21,6 +21,8 @@ El diseño es una identidad propia: panel oscuro y elegante, tarjetas redondeada
 
 ```
 index.html              punto de entrada
+privacidad.html          aviso de privacidad (edítalo con tus datos, ver sección 7)
+terminos.html            términos de uso (edítalo con tus datos, ver sección 7)
 manifest.webmanifest     metadata de la PWA (nombre, ícono, colores)
 sw.js                    service worker (caché offline del "cascarón" de la app)
 ads.txt                  para cuando actives Google AdSense
@@ -206,13 +208,28 @@ Stripe cobra una comisión por cada donación (normal en cualquier procesador): 
 
 **Alternativas más simples (pero sin el bono de "sin anuncios" automático):** [Ko-fi](https://ko-fi.com) o PayPal.me — más rápidas de configurar, aunque Ko-fi muestra los montos en USD salvo que cambies la configuración regional de tu cuenta.
 
-## 7. Personalizarlo
+## 7. Aviso de privacidad y términos de uso
+
+Como la app guarda datos personales (correo, nombre del negocio, y placas de vehículos que registras en los tickets) y usa AdSense, la ley mexicana y las políticas de Google exigen un aviso de privacidad — ya viene incluido:
+
+- [privacidad.html](privacidad.html) — aviso de privacidad (identidad del responsable, qué datos se recaban, para qué, con quién se comparten, cómo ejercer tus derechos ARCO).
+- [terminos.html](terminos.html) — términos de uso (servicio "tal cual", responsabilidad, donaciones, propiedad intelectual).
+
+**Antes de publicar, edítalos con tus datos reales:**
+
+1. Abre [privacidad.html](privacidad.html) y reemplaza `[TU NOMBRE O RAZÓN SOCIAL]` por tu nombre. Revisa que el correo de contacto sea el que quieres usar públicamente.
+2. Ambos archivos tienen un comentario al inicio recordándote qué editar.
+3. Ya están enlazados desde la pantalla de inicio de sesión y desde **Más**.
+
+Esto no sustituye una revisión legal formal — son plantillas razonables basadas en los requisitos vigentes, pero si en algún momento monetizas en serio o creces mucho, vale la pena que un abogado las revise.
+
+## 8. Personalizarlo
 
 - **Nombre e ícono**: edita `manifest.webmanifest` (`name`, `short_name`, `theme_color`) y vuelve a generar los íconos con `python scripts/generate_icons.py` después de ajustar los colores en ese script, o reemplaza directamente los archivos en `icons/` por tu propio logo (mismos nombres y tamaños: 192×192, 512×512, 512×512 maskable, 180×180 para iOS).
 - **Colores y estilo**: variables CSS al inicio de `css/styles.css` (`--bg`, `--accent`, `--ink`, etc. — hay un bloque para modo claro y otro para oscuro).
 - **Datos de ejemplo al primer uso**: `js/views/onboarding.js` (tipos de vehículo, servicios y trabajadores por defecto).
 
-## 8. Limitaciones actuales (honestidad ante todo)
+## 9. Limitaciones actuales (honestidad ante todo)
 
 - **Un dueño = una caja compartida.** Todos los que inicien sesión con la misma cuenta ven los mismos datos; no hay roles distintos por empleado (todos tienen los mismos permisos). Para varias sucursales necesitarías una cuenta por sucursal.
 - El plan gratuito de Firebase (Spark) tiene límites diarios generosos pero reales (lecturas/escrituras/almacenamiento). Un carwash normal no se acerca a ellos, pero si creces mucho revisa el panel de uso en Firebase Console.
