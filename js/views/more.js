@@ -33,8 +33,8 @@ export function render(container, { navigate }) {
 
         <div id="install-slot"></div>
         <div class="menu-grid" id="menu-grid"></div>
-        <div class="ticket-card" style="justify-content:center; margin-top:20px;">
-          <p class="subtext center" style="width:100%;">🚗💦 Control Carwash Libre · gratis y de código abierto</p>
+        <div class="card center" style="margin-top:20px;">
+          <p class="subtext center">AutoNave MX · gratis y de código abierto</p>
         </div>
       </div>
     </div>

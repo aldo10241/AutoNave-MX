@@ -36,11 +36,11 @@ export function render(container, { onDone }) {
   const node = el(`
     <div class="auth-screen">
       <div class="auth-wrap">
-        <div class="brand-mark"><span>🚗</span></div>
+        <div class="brand-mark"><span style="font-size:26px; font-weight:800; color:#fff; letter-spacing:-.02em;">AN</span></div>
         <h1 class="auth-title">¿Cómo se llama tu negocio?</h1>
-        <p class="auth-tagline">Un último paso (20 segundos) y queda listo tu carwash.</p>
+        <p class="auth-tagline">Un último paso (20 segundos) y queda listo tu carwash en AutoNave MX.</p>
 
-        <div class="ticket-card auth-card">
+        <div class="card auth-card">
           <div class="field">
             <label>Nombre del negocio</label>
             <input id="ob-name" type="text" placeholder="Carwash San José" />

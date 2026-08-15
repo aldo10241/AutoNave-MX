@@ -1,13 +1,13 @@
 {
-  "name": "Control Carwash Libre",
-  "short_name": "Carwash Libre",
-  "description": "Gestión gratuita de autolavados: tickets, caja, asistencia y estadísticas. Funciona sin internet.",
+  "name": "AutoNave MX",
+  "short_name": "AutoNave MX",
+  "description": "Gestiona tu autolavado con estilo: tickets, caja, asistencia y estadísticas, con tus datos siempre contigo.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#FBF6EC",
-  "theme_color": "#F5A623",
+  "background_color": "#0E1220",
+  "theme_color": "#0E1220",
   "lang": "es",
   "dir": "ltr",
   "icons": [

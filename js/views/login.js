@@ -16,12 +16,12 @@ export function render(container) {
     <div class="auth-screen">
       <div class="auth-wrap">
         <div class="brand-mark">
-          <span>🚗</span>
+          <span style="font-size:26px; font-weight:800; color:#fff; letter-spacing:-.02em;">AN</span>
         </div>
-        <h1 class="auth-title">Control Carwash</h1>
+        <h1 class="auth-title">AutoNave MX</h1>
         <p class="auth-tagline">Gratis. Tus datos, en la nube, contigo en cualquier dispositivo.</p>
 
-        <div class="ticket-card auth-card">
+        <div class="card auth-card">
           <div class="tabs" id="auth-tabs">
             <button data-m="signin" class="active">Entrar</button>
             <button data-m="signup">Crear cuenta</button>

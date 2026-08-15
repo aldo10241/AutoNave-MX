@@ -1,8 +1,8 @@
-// Service worker de Control Carwash Libre.
+// Service worker de AutoNave MX.
 // IMPORTANTE: sube este número cada vez que cambies archivos para forzar
 // la actualización del caché en los dispositivos de los usuarios.
-const CACHE_VERSION = 'v5';
-const CACHE_NAME = `carwash-libre-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v6';
+const CACHE_NAME = `autonave-mx-${CACHE_VERSION}`;
 
 const ASSETS = [
   './',

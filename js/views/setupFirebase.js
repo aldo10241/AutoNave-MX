@@ -8,7 +8,7 @@ export function render(container) {
         <h1 class="auth-title">Falta conectar Firebase</h1>
         <p class="auth-tagline">Esta app usa una cuenta gratuita de Firebase para el login y para guardar los datos en la nube.</p>
 
-        <div class="ticket-card auth-card" style="text-align:left;">
+        <div class="card auth-card" style="text-align:left;">
           <ol style="padding-left:18px; display:flex; flex-direction:column; gap:10px; font-size:14px; line-height:1.5;">
             <li>Crea un proyecto gratis en <strong>console.firebase.google.com</strong></li>
             <li>Agrega una app <strong>Web</strong> y copia el objeto de configuración</li>

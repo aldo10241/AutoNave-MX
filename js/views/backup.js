@@ -20,13 +20,13 @@ export function render(container, { navigate }) {
         <button class="btn btn-outline" id="b-import">⬆️ Importar datos (.json)</button>
       </div>
 
-      <div class="card" style="border-color:var(--red);">
+      <div class="card" style="border-left:4px solid var(--red);">
         <p class="subtext mb12">Esto elimina tickets, asistencia, gastos y configuración de tu cuenta en la nube de forma permanente (no solo de este dispositivo).</p>
         <button class="btn btn-danger" id="b-wipe">🗑️ Borrar todos los datos</button>
       </div>
 
       <div class="card center">
-        <p style="font-size:15px; font-weight:800;">🚗💦 Control Carwash Libre</p>
+        <p style="font-size:15px; font-weight:800;">AutoNave MX</p>
         <p class="subtext mt8">App gratuita, sin suscripciones. Se mantiene con anuncios discretos en pantallas secundarias.</p>
         <p class="subtext mt8">Tus datos son tuyos: quedan guardados en tu cuenta y puedes exportarlos cuando quieras.</p>
       </div>
@@ -37,7 +37,7 @@ export function render(container, { navigate }) {
 
   view.querySelector('#b-export').addEventListener('click', async () => {
     const data = await DB.exportAll();
-    downloadFile(`carwash-backup-${todayStr()}.json`, JSON.stringify(data, null, 2), 'application/json');
+    downloadFile(`autonave-mx-backup-${todayStr()}.json`, JSON.stringify(data, null, 2), 'application/json');
     toast('Respaldo descargado', 'success');
   });
 

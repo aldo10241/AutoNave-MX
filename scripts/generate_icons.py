@@ -10,10 +10,10 @@ import os
 OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
 os.makedirs(OUT_DIR, exist_ok=True)
 
-BG_TOP = (242, 146, 27)     # ambar oscuro
-BG_BOTTOM = (245, 166, 35)  # ambar (accent de marca)
-WHITE = (255, 253, 248)     # crema (papel)
-BUBBLE = (255, 253, 248)    # crema
+BG_TOP = (14, 18, 32)       # azul marino oscuro
+BG_BOTTOM = (27, 36, 64)    # azul marino, un poco mas claro
+WHITE = (243, 245, 249)     # carroceria clara
+BUBBLE = (139, 124, 255)    # violeta acento (detalle)
 
 
 def lerp(a, b, t):
@@ -86,10 +86,10 @@ def make_pixels(size, maskable=False):
     # --- ruedas ---
     wheel_r = 34 * scale * (body_scale / 0.86)
     wheel_y = by1 - 6 * scale
-    fill_circle(bx0 + body_w * 0.24, wheel_y, wheel_r, (34, 29, 20))
-    fill_circle(bx0 + body_w * 0.76, wheel_y, wheel_r, (34, 29, 20))
-    fill_circle(bx0 + body_w * 0.24, wheel_y, wheel_r * 0.45, (250, 247, 240))
-    fill_circle(bx0 + body_w * 0.76, wheel_y, wheel_r * 0.45, (250, 247, 240))
+    fill_circle(bx0 + body_w * 0.24, wheel_y, wheel_r, (76, 141, 255))
+    fill_circle(bx0 + body_w * 0.76, wheel_y, wheel_r, (76, 141, 255))
+    fill_circle(bx0 + body_w * 0.24, wheel_y, wheel_r * 0.45, (14, 18, 32))
+    fill_circle(bx0 + body_w * 0.76, wheel_y, wheel_r * 0.45, (14, 18, 32))
 
     # --- burbujas de espuma ---
     fill_circle(cx - body_w * 0.32, by0 - 22 * scale, 14 * scale, BUBBLE)

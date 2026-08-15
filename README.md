@@ -1,10 +1,10 @@
-# 🚗💦 Control Carwash Libre
+# AutoNave MX
 
 App **gratuita y de código abierto** para gestionar un autolavado: tickets, caja, asistencia de trabajadores y estadísticas. Es una **PWA** (Progressive Web App): funciona en el navegador, se puede **instalar** en el celular o la computadora como si fuera una app nativa, y **sigue funcionando sin internet** una vez cargada.
 
 No usa frameworks ni npm/Node — es HTML, CSS y JavaScript "vanilla" (módulos ES). Esto significa que **no hay que compilar nada**: se sube tal cual a GitHub Pages y ya funciona. Cada dueño de carwash **crea su cuenta** (correo/contraseña o Google) y sus datos se guardan en su propia cuenta en la nube (Firebase, plan gratuito), así que puede entrar desde el celular, una tablet y la computadora del mostrador y ver siempre la misma información.
 
-El diseño es una identidad propia — "boleto de taller": papel cálido, tinta oscura, un acento ámbar y los tickets dibujados como boletos perforados de verdad. No es una copia de ninguna otra app.
+El diseño es una identidad propia: panel oscuro y elegante, tarjetas redondeadas, sombras suaves y un acento azul — pensado para verse profesional y para que cualquier persona lo use cómodamente, sin importar su edad o qué tan acostumbrada esté a la tecnología.
 
 ## Qué incluye
 
@@ -24,7 +24,7 @@ index.html              punto de entrada
 manifest.webmanifest     metadata de la PWA (nombre, ícono, colores)
 sw.js                    service worker (caché offline del "cascarón" de la app)
 ads.txt                  para cuando actives Google AdSense
-css/styles.css           todo el sistema de diseño ("boleto de taller")
+css/styles.css           todo el sistema de diseño (panel oscuro, tarjetas y navegación)
 js/
   app.js                 arranque + router + control de sesión (login/onboarding/app)
   firebaseConfig.js      tus claves de Firebase (las pegas tú, ver sección 2)
@@ -63,7 +63,7 @@ La app usa **Firebase** (de Google) para el login y para guardar los datos: es g
 
 ### 2.1 Crear el proyecto
 
-1. Entra a [console.firebase.google.com](https://console.firebase.google.com) con tu cuenta de Google → **Agregar proyecto** → dale un nombre (ej. "carwash-libre") → puedes desactivar Google Analytics, no lo necesitas.
+1. Entra a [console.firebase.google.com](https://console.firebase.google.com) con tu cuenta de Google → **Agregar proyecto** → dale un nombre (ej. "autonave-mx") → puedes desactivar Google Analytics, no lo necesitas.
 2. Dentro del proyecto, click en el ícono **`</>`** ("Web") para agregar una app web → dale un apodo → **no** hace falta marcar "Firebase Hosting" (usarás GitHub Pages) → Registrar app.
 3. Firebase te muestra un bloque de código con un objeto `firebaseConfig = {...}`. Copia esos valores y pégalos en [js/firebaseConfig.js](js/firebaseConfig.js), reemplazando el objeto de ejemplo.
 
@@ -102,19 +102,19 @@ Con esto ya puedes recargar la app local (`python -m http.server 8080`), crear u
 ## 3. Subirlo a GitHub
 
 1. Crea una cuenta en [github.com](https://github.com) si no tienes una.
-2. Crea un repositorio nuevo (botón **New repository**). Puede ser público (necesario para GitHub Pages gratis, salvo que tengas plan de pago) — por ejemplo `carwash-libre`. No marques "Add a README" (ya tienes uno).
+2. Crea un repositorio nuevo (botón **New repository**). Puede ser público (necesario para GitHub Pages gratis, salvo que tengas plan de pago) — por ejemplo `autonave-mx`. No marques "Add a README" (ya tienes uno).
 3. En tu computadora, dentro de esta carpeta:
 
 ```bash
 git init
 git add .
-git commit -m "Primera versión de Control Carwash Libre"
+git commit -m "Primera versión de AutoNave MX"
 git branch -M main
-git remote add origin https://github.com/TU-USUARIO/carwash-libre.git
+git remote add origin https://github.com/TU-USUARIO/autonave-mx.git
 git push -u origin main
 ```
 
-(Reemplaza `TU-USUARIO/carwash-libre` por la URL real de tu repositorio.)
+(Reemplaza `TU-USUARIO/autonave-mx` por la URL real de tu repositorio.)
 
 ## 4. Desplegarlo con GitHub Pages
 
@@ -124,7 +124,7 @@ Este proyecto ya incluye `.github/workflows/deploy.yml`, que despliega automáti
 2. En "Build and deployment" → **Source**, elige **GitHub Actions** (no "Deploy from a branch").
 3. Haz cualquier pequeño cambio y `git push`, o entra a la pestaña **Actions** de tu repo y ejecuta el workflow manualmente ("Run workflow").
 4. En unos segundos/minutos tu app quedará publicada en:
-   `https://TU-USUARIO.github.io/carwash-libre/`
+   `https://TU-USUARIO.github.io/autonave-mx/`
 
 Cada vez que hagas `git push` a `main`, el sitio se actualiza solo.
 
@@ -138,7 +138,7 @@ Una vez publicada:
 
 - **Android (Chrome)**: entra al sitio, aparecerá un banner "Instalar" dentro de la app (o el menú ⋮ → "Instalar app" / "Agregar a pantalla de inicio").
 - **iPhone (Safari)**: entra al sitio → botón compartir (cuadrito con flecha) → **"Agregar a pantalla de inicio"**. iOS no permite instalar PWAs desde otros navegadores, tiene que ser Safari.
-- **Escritorio (Chrome/Edge)**: ícono de instalar en la barra de direcciones, o menú → "Instalar Control Carwash Libre".
+- **Escritorio (Chrome/Edge)**: ícono de instalar en la barra de direcciones, o menú → "Instalar AutoNave MX".
 
 Después de instalada, abre igual que cualquier app y funciona sin conexión — el service worker cachea el "cascarón" (HTML/CSS/JS) y Firestore cachea tus datos localmente; todo se sincroniza solo al recuperar internet (excepto el primer login, que sí necesita conexión, y los anuncios).
 
@@ -157,7 +157,7 @@ Pasos para activarlos:
 5. Actualiza `ads.txt` en la raíz del proyecto con la línea que te indique AdSense.
 6. Sube los cambios (`git add . && git commit -m "activar anuncios" && git push`).
 
-**Nota sobre `ads.txt` y GitHub Pages:** el archivo `ads.txt` normalmente se valida en la raíz del dominio (`tudominio.com/ads.txt`). Si publicas en `usuario.github.io/carwash-libre/`, el archivo queda en una subcarpeta y AdSense puede no encontrarlo automáticamente. Para que valide sin problema, lo más simple es conectar un **dominio propio** a GitHub Pages (Settings → Pages → Custom domain) o publicar como página de usuario/organización (`usuario.github.io`, sin subcarpeta).
+**Nota sobre `ads.txt` y GitHub Pages:** el archivo `ads.txt` normalmente se valida en la raíz del dominio (`tudominio.com/ads.txt`). Si publicas en `usuario.github.io/autonave-mx/`, el archivo queda en una subcarpeta y AdSense puede no encontrarlo automáticamente. Para que valide sin problema, lo más simple es conectar un **dominio propio** a GitHub Pages (Settings → Pages → Custom domain) o publicar como página de usuario/organización (`usuario.github.io`, sin subcarpeta).
 
 Mientras `ADSENSE_CLIENT` conserve el valor de ejemplo, la app **no carga ningún anuncio real** (evita errores y espacios vacíos para tus usuarios).
 

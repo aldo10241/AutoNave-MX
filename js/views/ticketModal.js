@@ -7,11 +7,11 @@ import { getUserLabel } from '../auth.js';
 // ---------------------------------------------------------------------------
 // Nuevo ticket
 // ---------------------------------------------------------------------------
-export function openNewTicketSheet({ onCreated } = {}) {
+export function openNewTicketSheet({ onCreated, initialTypeId } = {}) {
   const s = state.settings;
   const activeWorkers = s.workers.filter((w) => w.active);
 
-  let selectedType = s.vehicleTypes[0] || null;
+  let selectedType = (initialTypeId && s.vehicleTypes.find((v) => v.id === initialTypeId)) || s.vehicleTypes[0] || null;
   let selectedWorker = activeWorkers[0] || null;
 
   const body = el(`

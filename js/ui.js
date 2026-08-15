@@ -69,14 +69,13 @@ export function emptyState(emoji, title, text) {
 }
 
 /**
- * Tarjeta de ticket con motivo de "boleto perforado". Usada en Tickets e Historial.
+ * Fila de ticket para listas verticales (Historial, Día). Usada también en Tickets.
  */
 export function renderTicketRow(t, onClick) {
   const statusClass = t.status === 'closed' ? 'status-closed' : 'status-open';
   const card = el(`
     <button class="ticket-card ticket-row ${statusClass}" style="text-align:left;">
       <div class="ticket-stub"><span class="ticket-emoji">${t.vehicleEmoji || '🚗'}</span></div>
-      <div class="ticket-perf" aria-hidden="true"></div>
       <div class="ticket-body">
         <div class="ticket-id">${escapeHtml(t.shortId)}${t.plate ? ' · ' + escapeHtml(t.plate) : ''}</div>
         <div class="ticket-meta">${escapeHtml(t.vehicleTypeName)} · ${escapeHtml(t.washerName || 'Sin asignar')}</div>
@@ -84,6 +83,29 @@ export function renderTicketRow(t, onClick) {
       <div class="ticket-side">
         <div class="ticket-amount">${money(t.total)}</div>
         <span class="stamp ${t.status === 'open' ? 'stamp-open' : 'stamp-closed'}">${t.status === 'open' ? 'Abierto' : formatTime(t.closedAt)}</span>
+      </div>
+    </button>
+  `);
+  card.addEventListener('click', () => onClick(t));
+  return card;
+}
+
+/**
+ * Tarjeta compacta para el carrusel horizontal de "Tickets activos" en Home.
+ */
+export function renderApptCard(t, onClick) {
+  const card = el(`
+    <button class="appt-card">
+      <div class="top-row">
+        <div class="appt-avatar">${t.vehicleEmoji || '🚗'}</div>
+        <div class="who">
+          <div class="name">${escapeHtml(t.plate || t.shortId)}</div>
+          <div class="sub">${escapeHtml(t.vehicleTypeName)} · ${escapeHtml(t.washerName || 'Sin asignar')}</div>
+        </div>
+      </div>
+      <div class="meta-row">
+        <span class="stamp ${t.status === 'open' ? 'stamp-open' : 'stamp-closed'}">${t.status === 'open' ? 'Abierto' : formatTime(t.closedAt)}</span>
+        <span class="amount">${money(t.total)}</span>
       </div>
     </button>
   `);

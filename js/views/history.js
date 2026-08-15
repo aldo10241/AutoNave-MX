@@ -12,7 +12,7 @@ export function render(container, { navigate }) {
   root.appendChild(renderTopbar({ title: 'Historial', onBack: () => navigate('/more') }));
   const view = el(`
     <div class="view">
-      <div class="search-bar">
+      <div class="search-bar-inline">
         <span>🔎</span>
         <input id="hi-search" type="text" placeholder="Buscar por placa o ticket..." />
       </div>
