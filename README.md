@@ -73,7 +73,7 @@ La app usa **Firebase** (de Google) para el login y para guardar los datos: es g
 1. Menú lateral → **Authentication** → **Comenzar** (Get started).
 2. Pestaña **Sign-in method** → activa **Correo electrónico/contraseña**.
 3. En la misma pestaña, activa **Google** → elige un correo de soporte → Guardar.
-4. Cuando despliegues en GitHub Pages, ve a **Authentication → Settings → Authorized domains** y agrega tu dominio (`tuusuario.github.io`) — si no, el botón de Google fallará con "unauthorized-domain".
+4. Cuando despliegues en GitHub Pages, ve a **Authentication → Settings → Authorized domains** y agrega tu dominio (`tuusuario.github.io`, y también tu dominio propio si conectaste uno, ej. `autonavemx.com`) — si no, el botón de Google fallará con "unauthorized-domain".
 
 ### 2.3 Activar la base de datos (Firestore)
 
@@ -133,6 +133,17 @@ Cada vez que hagas `git push` a `main`, el sitio se actualiza solo.
 
 Si prefieres no usar el workflow: Settings → Pages → Source → **Deploy from a branch** → rama `main`, carpeta `/ (root)`. Funciona igual de bien para este proyecto porque no hay build.
 
+### Dominio propio (ej. autonavemx.com)
+
+El repositorio ya incluye un archivo `CNAME` apuntando a `autonavemx.com`, pero eso por sí solo no activa el dominio — faltan dos pasos más:
+
+1. En tu proveedor de dominio (donde compraste `autonavemx.com`), agrega estos registros DNS:
+   - Cuatro registros **A** apuntando a: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
+   - Si además quieres que funcione `www.autonavemx.com`, agrega un registro **CNAME** de `www` apuntando a `TU-USUARIO.github.io`.
+2. En GitHub → tu repo → **Settings → Pages**, en el campo "Custom domain" escribe `autonavemx.com` y guarda. Espera a que aparezca la palomita verde (puede tardar de minutos a un día en propagar) y luego marca **"Enforce HTTPS"**.
+
+Mientras el dominio no esté verificado, tu app sigue funcionando normal en `https://TU-USUARIO.github.io/autonave-mx/`.
+
 ## 5. Instalar la app en el celular (PWA)
 
 Una vez publicada:
@@ -158,7 +169,7 @@ Pasos para activarlos:
 5. Actualiza `ads.txt` en la raíz del proyecto con la línea que te indique AdSense.
 6. Sube los cambios (`git add . && git commit -m "activar anuncios" && git push`).
 
-**Nota sobre `ads.txt` y GitHub Pages:** el archivo `ads.txt` normalmente se valida en la raíz del dominio (`tudominio.com/ads.txt`). Si publicas en `usuario.github.io/autonave-mx/`, el archivo queda en una subcarpeta y AdSense puede no encontrarlo automáticamente. Para que valide sin problema, lo más simple es conectar un **dominio propio** a GitHub Pages (Settings → Pages → Custom domain) o publicar como página de usuario/organización (`usuario.github.io`, sin subcarpeta).
+**Nota sobre `ads.txt` y GitHub Pages:** el archivo `ads.txt` normalmente se valida en la raíz del dominio (`tudominio.com/ads.txt`). Con el dominio propio ya conectado (ver sección 4 → "Dominio propio"), `ads.txt` queda automáticamente en `autonavemx.com/ads.txt` — justo donde AdSense lo espera.
 
 Mientras `ADSENSE_CLIENT` conserve el valor de ejemplo, la app **no carga ningún anuncio real** (evita errores y espacios vacíos para tus usuarios).
 
@@ -183,7 +194,7 @@ Además de los anuncios, la app tiene un botón opcional de "Donar" en **Más**,
 4. Revisa que la moneda diga **MXN** (pesos mexicanos) — Stripe la detecta según tu cuenta, pero confírmalo antes de crear el link.
 5. Antes de crear el link, abre **"Opciones avanzadas" → "Después del pago"** → elige **"Redirigir a tu sitio web"** y pega exactamente esta URL (ajusta tu usuario/repo si son distintos):
    ```
-   https://aldo10241.github.io/AutoNave-MX/?gracias=1#/more
+   https://autonavemx.com/?gracias=1#/more
    ```
    Ese `?gracias=1` es lo que la app detecta para quitar los anuncios al volver — si cambias esa palabra aquí, también cámbiala en `DONATION_RETURN_PARAM` dentro de [js/donate.js](js/donate.js).
 6. **Crear enlace**. Te da una URL tipo `https://buy.stripe.com/xxxxxxxx`. Cópiala.
