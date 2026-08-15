@@ -34,7 +34,7 @@ js/
   store.js               estado compartido en memoria
   ui.js                  helpers de interfaz (topbar, sheets/modales, tarjeta de ticket)
   ads.js                 módulo de anuncios (AdSense)
-  donate.js              enlace opcional de donación/propina (Más)
+  donate.js              enlace opcional de donación (Stripe/Ko-fi/etc.) + bono "sin anuncios"
   install.js             lógica de "instalar app"
   theme.js               preferencia de tema claro/oscuro
   utils.js               formateo, toasts, exportar CSV, etc.
@@ -173,12 +173,27 @@ Los anuncios solo aparecen en pantallas secundarias (Estadísticas, Historial, C
 
 ### Donaciones (probablemente más realista que los anuncios)
 
-Además de los anuncios, la app tiene un botón opcional de "Donar" en **Más**, pensado para que quien la use y le sirva pueda apoyarte directamente — suele rendir más rápido que AdSense para una herramienta de nicho como esta.
+Además de los anuncios, la app tiene un botón opcional de "Donar" en **Más**, pensado para que quien la use y le sirva pueda apoyarte directamente — suele rendir más rápido que AdSense para una herramienta de nicho como esta. Quien dona, además, deja de ver anuncios en su cuenta automáticamente.
 
-1. Crea una cuenta gratis en algún servicio de propinas/donación — el más simple es [Ko-fi](https://ko-fi.com) (también funcionan PayPal.me o el "Link de pago" de Mercado Pago).
-2. Copia tu link (ej. `https://ko-fi.com/tunombre`).
-3. Pégalo en [js/donate.js](js/donate.js), reemplazando el valor vacío de `DONATION_URL`.
-4. El botón aparece solo cuando configuras el link — mientras esté vacío, no se muestra nada.
+**Recomendado: Stripe Payment Link** — es la única opción de las tres que cobra en pesos mexicanos de forma nativa (no dólares) y que puede activar el "sin anuncios" automáticamente al volver del pago.
+
+1. Crea tu cuenta en [dashboard.stripe.com/register](https://dashboard.stripe.com/register) (correo, nombre, cómo te van a depositar — cuenta bancaria mexicana). Esto lo tienes que hacer tú; nadie más puede crear tu cuenta de pagos.
+2. Ya adentro, ve a **Payment links** (Enlaces de pago) en el menú lateral → **+ Crear enlace de pago**.
+3. En "Producto": nombre "Donación AutoNave MX", y en precio elige **"El cliente elige cuánto pagar"** (así cualquiera dona lo que quiera, no un monto fijo).
+4. Revisa que la moneda diga **MXN** (pesos mexicanos) — Stripe la detecta según tu cuenta, pero confírmalo antes de crear el link.
+5. Antes de crear el link, abre **"Opciones avanzadas" → "Después del pago"** → elige **"Redirigir a tu sitio web"** y pega exactamente esta URL (ajusta tu usuario/repo si son distintos):
+   ```
+   https://aldo10241.github.io/AutoNave-MX/?gracias=1#/more
+   ```
+   Ese `?gracias=1` es lo que la app detecta para quitar los anuncios al volver — si cambias esa palabra aquí, también cámbiala en `DONATION_RETURN_PARAM` dentro de [js/donate.js](js/donate.js).
+6. **Crear enlace**. Te da una URL tipo `https://buy.stripe.com/xxxxxxxx`. Cópiala.
+7. Pégala en [js/donate.js](js/donate.js), reemplazando el valor vacío de `DONATION_URL`.
+
+Stripe cobra una comisión por cada donación (normal en cualquier procesador): aproximadamente 3.6% + $3 MXN por transacción con tarjetas mexicanas, más IVA sobre esa comisión — de una donación de $100 MXN te llegarían netos alrededor de $92 MXN.
+
+**Nota sobre el "sin anuncios":** como la app no tiene servidor propio, no hay forma 100% blindada de confirmar el pago real — la app confía en que Stripe te regresó porque el pago fue exitoso. Es más que suficiente dado que hablamos de anuncios que valen centavos; no es algo por lo que valga la pena complicar la app con funciones en la nube.
+
+**Alternativas más simples (pero sin el bono de "sin anuncios" automático):** [Ko-fi](https://ko-fi.com) o PayPal.me — más rápidas de configurar, aunque Ko-fi muestra los montos en USD salvo que cambies la configuración regional de tu cuenta.
 
 ## 7. Personalizarlo
 

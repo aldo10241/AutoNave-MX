@@ -35,17 +35,24 @@ export function render(container, { navigate }) {
         <div id="install-slot"></div>
         <div class="menu-grid" id="menu-grid"></div>
 
-        ${isDonationConfigured() ? `
+        ${s.donorAdFree ? `
+        <div class="card" style="margin-top:20px; display:flex; align-items:center; gap:12px;">
+          <span style="font-size:24px;">✨</span>
+          <div>
+            <p style="font-weight:800; font-size:14.5px;">Gracias por tu apoyo</p>
+            <p class="subtext">Tu cuenta ya no muestra anuncios.</p>
+          </div>
+        </div>` : isDonationConfigured() ? `
         <div class="card" style="margin-top:20px; display:flex; align-items:center; gap:12px;">
           <span style="font-size:24px;">☕</span>
           <div style="flex:1;">
             <p style="font-weight:800; font-size:14.5px;">¿Te sirve AutoNave MX?</p>
-            <p class="subtext">Apoya el proyecto con lo que gustes.</p>
+            <p class="subtext">Apoya el proyecto y de paso quitas los anuncios de tu cuenta.</p>
           </div>
-          <a href="${DONATION_URL}" target="_blank" rel="noopener" class="btn btn-primary" style="width:auto; padding:10px 16px; font-size:13.5px;">Donar</a>
+          <a href="${DONATION_URL}" rel="noopener" class="btn btn-primary" style="width:auto; padding:10px 16px; font-size:13.5px;">Donar</a>
         </div>` : ''}
 
-        <div class="card center" style="margin-top:${isDonationConfigured() ? '12px' : '20px'};">
+        <div class="card center" style="margin-top:${(s.donorAdFree || isDonationConfigured()) ? '12px' : '20px'};">
           <p class="subtext center">AutoNave MX · gratis y de código abierto</p>
         </div>
       </div>

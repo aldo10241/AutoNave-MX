@@ -1,6 +1,7 @@
 // Módulo de anuncios (Google AdSense) — discretos y solo en pantallas
 // secundarias (Stats, Historial, Config). Nunca en el flujo de Tickets/Día
-// ni como interstitial/popup.
+// ni como interstitial/popup. Quien haya donado (ver js/donate.js) no ve
+// ningún anuncio en ninguna pantalla.
 //
 // CÓMO ACTIVARLO (ver README.md, sección "Monetización con anuncios"):
 // 1. Crea una cuenta en https://adsense.google.com y agrega tu sitio.
@@ -9,6 +10,8 @@
 // 4. Actualiza también ads.txt en la raíz del proyecto con tu pub-id.
 // Mientras ADSENSE_CLIENT tenga el valor de ejemplo, no se carga ningún
 // anuncio real (evita errores de consola y bloques vacíos para tus usuarios).
+
+import { state } from './store.js';
 
 export const ADSENSE_CLIENT = 'ca-pub-0000000000000000';
 
@@ -45,6 +48,7 @@ function loadScript() {
  */
 export function mountAd(container, placement) {
   if (!container) return;
+  if (state.settings?.donorAdFree) return;
 
   if (!isConfigured()) {
     if (isLocalhost) {

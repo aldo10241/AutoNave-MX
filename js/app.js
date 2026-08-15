@@ -1,9 +1,10 @@
 import { DB } from './db.js';
-import { el } from './utils.js';
+import { el, toast } from './utils.js';
 import { state, setSettings } from './store.js';
 import { firebaseReady } from './firebase.js';
 import { onAuthChange } from './auth.js';
 import { initTheme } from './theme.js';
+import { DONATION_RETURN_PARAM } from './donate.js';
 
 import * as setupFirebase from './views/setupFirebase.js';
 import * as login from './views/login.js';
@@ -99,7 +100,27 @@ function showLoadingScreen() {
 
 let routerBound = false;
 
+// Si Stripe nos regresa desde un pago exitoso (ver README → "Donaciones"),
+// marcamos la cuenta como "sin anuncios". No es una verificación blindada
+// (la app es 100% estática, sin servidor propio para validar el pago real),
+// pero dado que los anuncios valen centavos, el riesgo de que alguien la
+// active sin donar es irrelevante — no vale la pena complicar esto con
+// funciones en la nube por tan poco.
+async function checkDonationReturn(settings) {
+  const params = new URLSearchParams(location.search);
+  if (params.get(DONATION_RETURN_PARAM) !== '1') return settings;
+
+  window.history.replaceState({}, '', location.pathname + location.hash);
+  if (settings.donorAdFree) return settings;
+
+  const updated = { ...settings, donorAdFree: true };
+  await DB.saveSettings(updated);
+  toast('¡Gracias por tu apoyo! Ya no verás anuncios en tu cuenta.', 'success');
+  return updated;
+}
+
 async function enterApp(settings) {
+  settings = await checkDonationReturn(settings);
   setSettings(settings);
   if (!routerBound) {
     window.addEventListener('hashchange', handleRoute);
