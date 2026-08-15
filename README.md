@@ -34,6 +34,7 @@ js/
   store.js               estado compartido en memoria
   ui.js                  helpers de interfaz (topbar, sheets/modales, tarjeta de ticket)
   ads.js                 módulo de anuncios (AdSense)
+  donate.js              enlace opcional de donación/propina (Más)
   install.js             lógica de "instalar app"
   theme.js               preferencia de tema claro/oscuro
   utils.js               formateo, toasts, exportar CSV, etc.
@@ -165,6 +166,19 @@ Mientras `ADSENSE_CLIENT` conserve el valor de ejemplo, la app **no carga ningú
 
 - [Carbon Ads](https://www.carbonads.net/) o [BuySellAds](https://www.buysellads.com/): redes más pequeñas, suelen aprobar más rápido.
 - Un simple banner de "apóyanos" con enlace a Ko-fi / Buy Me a Coffee mientras consigues aprobación (puedes reemplazar temporalmente el contenido de `mountAd()` en `js/ads.js`).
+
+### Honestidad sobre cuánto puedes ganar con los anuncios
+
+Los anuncios solo aparecen en pantallas secundarias (Estadísticas, Historial, Config), así que hay pocas impresiones por negocio al día. Con RPM típico de tráfico mexicano (~$1-3 USD por cada 1,000 impresiones), esto se siente más como para cubrir gastos simbólicos que como un ingreso real, salvo que la app la usen cientos de negocios de forma activa. No la conviertas en tu plan de negocio principal.
+
+### Donaciones (probablemente más realista que los anuncios)
+
+Además de los anuncios, la app tiene un botón opcional de "Donar" en **Más**, pensado para que quien la use y le sirva pueda apoyarte directamente — suele rendir más rápido que AdSense para una herramienta de nicho como esta.
+
+1. Crea una cuenta gratis en algún servicio de propinas/donación — el más simple es [Ko-fi](https://ko-fi.com) (también funcionan PayPal.me o el "Link de pago" de Mercado Pago).
+2. Copia tu link (ej. `https://ko-fi.com/tunombre`).
+3. Pégalo en [js/donate.js](js/donate.js), reemplazando el valor vacío de `DONATION_URL`.
+4. El botón aparece solo cuando configuras el link — mientras esté vacío, no se muestra nada.
 
 ## 7. Personalizarlo
 
