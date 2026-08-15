@@ -14,12 +14,13 @@
 // pantalla de ayuda en vez de intentar conectarse (para no romperse).
 
 export const firebaseConfig = {
-  apiKey: 'TU_API_KEY',
-  authDomain: 'TU_PROYECTO.firebaseapp.com',
-  projectId: 'TU_PROYECTO',
-  storageBucket: 'TU_PROYECTO.appspot.com',
-  messagingSenderId: '000000000000',
-  appId: '1:000000000000:web:0000000000000000000000',
+  apiKey: "AIzaSyBwyOkGWj1lBiNo1YJB3jibE57D7KcORuI",
+  authDomain: "autonave-mx.firebaseapp.com",
+  projectId: "autonave-mx",
+  storageBucket: "autonave-mx.firebasestorage.app",
+  messagingSenderId: "784786733057",
+  appId: "1:784786733057:web:8c61159622d3e69c42e800",
+  measurementId: "G-GW3LF4CSC2"
 };
 
 export function isFirebaseConfigured() {
