@@ -1,5 +1,4 @@
-# Cuando Google AdSense apruebe tu sitio, reemplaza la línea de abajo con la
-# que te indique tu panel de AdSense (Sitios → tu dominio → "Ver código ads.txt").
-# Debe quedar publicada en la raíz del sitio: https://tuusuario.github.io/tu-repo/ads.txt
-#
-# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+# Verifica esta línea contra la que te muestre tu panel de AdSense
+# (Sitios → autonavemx.com → "Ver código ads.txt") y actualízala si difiere.
+# Debe quedar publicada en la raíz del sitio: https://autonavemx.com/ads.txt
+google.com, pub-4998727818500192, DIRECT, f08c47fec0942fa0
