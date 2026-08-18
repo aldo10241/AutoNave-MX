@@ -76,6 +76,18 @@ La app usa **Firebase** (de Google) para el login y para guardar los datos: es g
 2. Pestaña **Sign-in method** → activa **Correo electrónico/contraseña**.
 3. En la misma pestaña, activa **Google** → elige un correo de soporte → Guardar.
 4. Cuando despliegues en GitHub Pages, ve a **Authentication → Settings → Authorized domains** y agrega tu dominio (`tuusuario.github.io`, y también tu dominio propio si conectaste uno, ej. `autonavemx.com`) — si no, el botón de Google fallará con "unauthorized-domain".
+5. La app ya envía automáticamente un correo de verificación cuando alguien crea cuenta con correo/contraseña (no bloquea el uso, solo muestra un aviso en Más hasta que confirmen). No necesitas configurar nada para esto.
+
+### 2.2.1 Bloquear bots en el registro (gratis, opcional)
+
+Para evitar registros automatizados sin pedirle a la gente real que resuelva ningún captcha, la app usa **Firebase App Check + reCAPTCHA v3** (invisible casi siempre):
+
+1. Ve a [google.com/recaptcha/admin/create](https://www.google.com/recaptcha/admin/create) → registra un sitio con **reCAPTCHA v3**, dominio `autonavemx.com` (agrega también `localhost` si quieres probar en tu compu). Te da una **clave del sitio** (pública) y una **clave secreta** (privada, no la compartas).
+2. En Firebase Console → ⚙️ **Configuración del proyecto → App Check** → registra tu app web con el proveedor reCAPTCHA v3, pegando ahí la clave **secreta**.
+3. Pega la clave del **sitio** (la pública) en [js/firebaseConfig.js](js/firebaseConfig.js), reemplazando `RECAPTCHA_SITE_KEY`.
+4. En **App Check → pestaña "APIs"**, activa "Enforce" para Authentication.
+
+Mientras no configures `RECAPTCHA_SITE_KEY`, la app funciona igual, solo sin esta capa extra.
 
 ### 2.3 Activar la base de datos (Firestore)
 

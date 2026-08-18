@@ -1,7 +1,7 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
-import { todayStr, addDays, formatDateLong, money, uid, toast, el } from '../utils.js';
-import { openSheet, closeSheet } from '../ui.js';
+import { todayStr, addDays, formatDateLong, money, toast, el, escapeHtml } from '../utils.js';
+import { openExpenseSheet, categoryLabel } from './expenseModal.js';
 
 export function render(container, { navigate }) {
   const s = state.settings;
@@ -10,7 +10,7 @@ export function render(container, { navigate }) {
   const root = el(`
     <div>
       <div class="topbar"><h1>Día</h1><div class="spacer"></div>
-        <button class="action" id="day-expense">➕</button>
+        <button class="action" id="day-expense" title="Registrar gasto">➕</button>
       </div>
       <div class="view">
         <div class="row mb16">
@@ -55,9 +55,9 @@ export function render(container, { navigate }) {
       else if (t.paymentMethod === 'mixto') { cash += t.total / 2; digital += t.total / 2; }
     });
 
-    const gastos = expenses.filter((e) => e.category === 'gasto').reduce((sum, e) => sum + e.amount, 0);
-    const propinas = expenses.filter((e) => e.category === 'propina').reduce((sum, e) => sum + e.amount, 0);
-    const totalCaja = reserve + cash - propinas - gastos;
+    // Solo lo pagado en efectivo sale físicamente de la caja.
+    const gastosEfectivo = expenses.filter((e) => e.paymentMethod === 'efectivo').reduce((sum, e) => sum + e.amount, 0);
+    const totalCaja = reserve + cash - gastosEfectivo;
     const ingresoTotal = closed.reduce((sum, t) => sum + t.total, 0);
     const serviciosAdic = closed.reduce((sum, t) => sum + (t.services || []).length, 0);
     const ventasSueltas = closed.reduce((sum, t) => sum + (t.extraItems || []).length, 0);
@@ -70,8 +70,7 @@ export function render(container, { navigate }) {
         <div class="divider"></div>
         <div class="row"><span class="subtext">+ Reserva inicial</span><span style="color:var(--green); font-weight:800;">${money(reserve)}</span></div>
         <div class="row"><span class="subtext">+ Cobros en efectivo</span><span style="color:var(--green); font-weight:800;">${money(cash)}</span></div>
-        <div class="row"><span class="subtext">− Propinas pago digital pagadas</span><span style="color:var(--red); font-weight:800;">−${money(propinas)}</span></div>
-        <div class="row"><span class="subtext">− Gastos en efectivo</span><span style="color:var(--red); font-weight:800;">−${money(gastos)}</span></div>
+        <div class="row"><span class="subtext">− Gastos pagados en efectivo</span><span style="color:var(--red); font-weight:800;">−${money(gastosEfectivo)}</span></div>
         <div class="divider"></div>
         <div class="row"><strong>Total efectivo en caja</strong><strong>${money(totalCaja)}</strong></div>
       </div>
@@ -91,8 +90,16 @@ export function render(container, { navigate }) {
         <button class="btn btn-outline btn-sm" id="day-detail">Ver detalle →</button>
       </div>
 
-      ${expenses.length ? `<div class="section-title">Gastos y propinas</div>
-        <div class="list" id="expense-list"></div>` : ''}
+      <div class="section-title"><span>Gastos${expenses.length ? ` (${expenses.length})` : ''}</span></div>
+      ${expenses.length ? '<div class="list" id="expense-list"></div>' : `
+        <button class="card" id="day-expense-empty" style="text-align:left; width:100%; display:flex; align-items:center; gap:12px;">
+          <span style="font-size:22px;">➕</span>
+          <div>
+            <p style="font-weight:800; font-size:14.5px;">Registra tu primer gasto del día</p>
+            <p class="subtext">Insumos, sueldos, propinas u otros — toca para agregarlo.</p>
+          </div>
+        </button>
+      `}
 
       ${currentDate === todayStr() ? `
         <button class="btn btn-primary mt20" id="day-close">✓ Cerrar día</button>
@@ -100,22 +107,32 @@ export function render(container, { navigate }) {
       ` : `<div class="badge closed center mt16" style="display:block;">${day && day.closed ? 'Día cerrado ✓' : 'Día sin cerrar'}</div>`}
     `));
 
+    const emptyBtn = content.querySelector('#day-expense-empty');
+    if (emptyBtn) emptyBtn.addEventListener('click', () => openExpenseSheet(currentDate, refresh));
+
     if (expenses.length) {
       const list = content.querySelector('#expense-list');
-      expenses.forEach((e) => {
-        const row = el(`<div class="row" style="background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px;">
-          <span>${e.category === 'propina' ? '💸' : '🧾'} ${e.concept}</span>
-          <span class="flex gap8">
-            <strong>${money(e.amount)}</strong>
-            <button style="color:var(--text-faint);" data-id="${e.id}">✕</button>
-          </span>
-        </div>`);
-        row.querySelector('button').addEventListener('click', async () => {
-          await DB.deleteExpense(e.id);
-          refresh();
+      expenses
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .forEach((e) => {
+          const cat = categoryLabel(e.category);
+          const row = el(`<div class="row" style="background:var(--surface); box-shadow:var(--shadow-sm); border-radius:var(--radius-sm); padding:11px 13px;">
+            <div style="min-width:0;">
+              <div style="font-weight:700; font-size:13.5px;">${cat.e} ${escapeHtml(e.concept)}</div>
+              <div class="subtext">${cat.t} · ${e.paymentMethod === 'efectivo' ? '💵 Efectivo' : '📱 Digital'}${e.note ? ' · ' + escapeHtml(e.note) : ''}</div>
+            </div>
+            <span class="flex gap8" style="flex-shrink:0;">
+              <strong>${money(e.amount)}</strong>
+              <button style="color:var(--text-faint);" data-id="${e.id}">✕</button>
+            </span>
+          </div>`);
+          row.querySelector('button').addEventListener('click', async () => {
+            await DB.deleteExpense(e.id);
+            refresh();
+          });
+          list.appendChild(row);
         });
-        list.appendChild(row);
-      });
     }
 
     const detailBtn = content.querySelector('#day-detail');
@@ -139,43 +156,4 @@ export function render(container, { navigate }) {
   }
 
   refresh();
-}
-
-function openExpenseSheet(date, onSaved) {
-  const body = el(`
-    <div>
-      <div class="field">
-        <label>Tipo</label>
-        <div class="pill-row" id="ex-cat">
-          <button type="button" class="pill selected" data-c="gasto">🧾 Gasto</button>
-          <button type="button" class="pill" data-c="propina">💸 Propina pagada</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Concepto</label>
-        <input id="ex-concept" type="text" placeholder="Ej. jabón, propina lavador..." />
-      </div>
-      <div class="field">
-        <label>Monto</label>
-        <input id="ex-amount" type="number" inputmode="decimal" placeholder="0" />
-      </div>
-      <button class="btn btn-primary" id="ex-save">Guardar</button>
-    </div>
-  `);
-  let category = 'gasto';
-  body.querySelectorAll('#ex-cat .pill').forEach((p) => p.addEventListener('click', () => {
-    body.querySelectorAll('#ex-cat .pill').forEach((x) => x.classList.remove('selected'));
-    p.classList.add('selected');
-    category = p.dataset.c;
-  }));
-  body.querySelector('#ex-save').addEventListener('click', async () => {
-    const concept = body.querySelector('#ex-concept').value.trim();
-    const amount = Number(body.querySelector('#ex-amount').value);
-    if (!concept || !amount) return toast('Completa concepto y monto', 'error');
-    await DB.addExpense({ id: uid(), date, category, concept, amount, createdAt: new Date().toISOString() });
-    toast('Registrado', 'success');
-    closeSheet();
-    onSaved();
-  });
-  openSheet('Registrar gasto / propina', body);
 }

@@ -1,9 +1,10 @@
 import { state } from '../store.js';
-import { el } from '../utils.js';
+import { el, toast } from '../utils.js';
 import { canInstall, promptInstall, isStandalone, isIos } from '../install.js';
-import { getCurrentUser, getUserLabel, logOut } from '../auth.js';
+import { getCurrentUser, getUserLabel, logOut, needsEmailVerification, resendVerificationEmail } from '../auth.js';
 import { getTheme, toggleTheme } from '../theme.js';
 import { DONATION_URL, isDonationConfigured } from '../donate.js';
+import { mountAd } from '../ads.js';
 
 const ITEMS = [
   { path: '/more/history', e: '🕘', t: 'Historial', d: 'Todos los tickets, filtra por fecha o placa' },
@@ -32,6 +33,7 @@ export function render(container, { navigate }) {
           <button class="btn btn-outline btn-sm" id="logout-btn">Salir</button>
         </div>
 
+        <div id="verify-slot"></div>
         <div id="install-slot"></div>
         <div class="menu-grid" id="menu-grid"></div>
 
@@ -52,6 +54,8 @@ export function render(container, { navigate }) {
           <a href="${DONATION_URL}" rel="noopener" class="btn btn-primary" style="width:auto; padding:10px 16px; font-size:13.5px;">Donar</a>
         </div>` : ''}
 
+        <div id="more-ad"></div>
+
         <div class="card center" style="margin-top:${(s.donorAdFree || isDonationConfigured()) ? '12px' : '20px'};">
           <p class="subtext center">AutoNave MX · gratis y de código abierto</p>
           <p class="subtext center mt8"><a href="privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a> · <a href="terminos.html" target="_blank" rel="noopener">Términos de uso</a></p>
@@ -60,6 +64,7 @@ export function render(container, { navigate }) {
     </div>
   `);
   container.appendChild(root);
+  mountAd(root.querySelector('#more-ad'), 'more');
 
   root.querySelector('#theme-toggle').addEventListener('click', (e) => {
     const mode = toggleTheme();
@@ -77,6 +82,16 @@ export function render(container, { navigate }) {
     tile.addEventListener('click', () => navigate(item.path));
     grid.appendChild(tile);
   });
+
+  if (needsEmailVerification()) {
+    const vb = el(`<div class="verify-banner"><span class="e">✉️</span><span class="t">Confirma tu correo para proteger tu cuenta.</span><button class="btn btn-outline btn-sm" id="resend-verify">Reenviar</button></div>`);
+    vb.querySelector('#resend-verify').addEventListener('click', async () => {
+      const result = await resendVerificationEmail();
+      if (result.error) toast(result.error, 'error');
+      else toast('Correo de verificación enviado', 'success');
+    });
+    root.querySelector('#verify-slot').appendChild(vb);
+  }
 
   const installSlot = root.querySelector('#install-slot');
   if (!isStandalone()) {

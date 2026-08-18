@@ -3,6 +3,7 @@ import { state } from '../store.js';
 import { todayStr, downloadFile, toast, el } from '../utils.js';
 import { renderTopbar } from '../ui.js';
 import { reloadSettings } from '../app.js';
+import { mountAd } from '../ads.js';
 
 export function render(container, { navigate }) {
   const root = el(`<div></div>`);
@@ -25,6 +26,8 @@ export function render(container, { navigate }) {
         <button class="btn btn-danger" id="b-wipe">🗑️ Borrar todos los datos</button>
       </div>
 
+      <div id="b-ad"></div>
+
       <div class="card center">
         <p style="font-size:15px; font-weight:800;">AutoNave MX</p>
         <p class="subtext mt8">App gratuita, sin suscripciones. Se mantiene con anuncios discretos en pantallas secundarias.</p>
@@ -34,6 +37,7 @@ export function render(container, { navigate }) {
   `);
   root.appendChild(view);
   container.appendChild(root);
+  mountAd(view.querySelector('#b-ad'), 'backup');
 
   view.querySelector('#b-export').addEventListener('click', async () => {
     const data = await DB.exportAll();

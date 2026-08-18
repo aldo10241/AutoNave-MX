@@ -37,7 +37,10 @@ export function render(container) {
           </div>
           <div class="field">
             <label>Contraseña</label>
-            <input id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+            <div class="password-wrap">
+              <input id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="password-toggle" id="auth-pw-toggle" aria-label="Mostrar contraseña">👁️</button>
+            </div>
           </div>
 
           <button class="btn btn-primary" id="auth-submit">Entrar</button>
@@ -85,6 +88,15 @@ export function render(container) {
     submitBtn.textContent = mode === 'signup' ? 'Crear mi cuenta' : 'Entrar';
     if (result.error) toast(result.error, 'error');
     // Si tiene éxito, onAuthStateChanged en app.js se encarga de continuar.
+  });
+
+  const pwInput = root.querySelector('#auth-password');
+  const pwToggle = root.querySelector('#auth-pw-toggle');
+  pwToggle.addEventListener('click', () => {
+    const shown = pwInput.type === 'text';
+    pwInput.type = shown ? 'password' : 'text';
+    pwToggle.textContent = shown ? '👁️' : '🙈';
+    pwToggle.setAttribute('aria-label', shown ? 'Mostrar contraseña' : 'Ocultar contraseña');
   });
 
   root.querySelector('#auth-google').addEventListener('click', async () => {

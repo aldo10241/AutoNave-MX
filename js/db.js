@@ -82,6 +82,9 @@ export const DB = {
   async getAttendanceByDate(date) {
     return docsOf(query(colRef('attendance'), where('date', '==', date)));
   },
+  async getAttendanceInRange(startDate, endDate) {
+    return docsOf(query(colRef('attendance'), where('date', '>=', startDate), where('date', '<=', endDate)));
+  },
   async getAllAttendance() {
     return docsOf(colRef('attendance'));
   },

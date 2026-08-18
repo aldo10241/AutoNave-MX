@@ -3,6 +3,7 @@ import { state } from '../store.js';
 import { todayStr, money, toast, el, escapeHtml } from '../utils.js';
 import { emptyState, renderTicketRow, renderApptCard } from '../ui.js';
 import { openNewTicketSheet, openCloseTicketSheet, openTicketDetailSheet } from './ticketModal.js';
+import { openExpenseSheet } from './expenseModal.js';
 import { canInstall, promptInstall, isStandalone, onInstallAvailabilityChange } from '../install.js';
 
 const HISTORY_PREVIEW_LIMIT = 5;
@@ -29,14 +30,27 @@ export function render(container, { navigate }) {
         <span class="subtext" style="margin:0;">Buscar ticket o placa...</span>
       </button>
       <div class="view" id="tickets-view"></div>
-      <button class="fab" id="fab-new" aria-label="Nuevo ticket">+</button>
+      <div class="fab-stack" id="fab-stack">
+        <button class="fab-mini" id="fab-expense"><span>💸</span><span>Registrar gasto</span></button>
+        <button class="fab-mini" id="fab-newticket"><span>🎫</span><span>Nuevo ticket</span></button>
+        <button class="fab" id="fab-toggle" aria-label="Acciones"><span class="fab-icon">+</span></button>
+      </div>
     </div>
   `);
   container.appendChild(root);
   const viewEl = root.querySelector('#tickets-view');
 
-  root.querySelector('#fab-new').addEventListener('click', () => {
+  const fabStack = root.querySelector('#fab-stack');
+  root.querySelector('#fab-toggle').addEventListener('click', () => {
+    fabStack.classList.toggle('open');
+  });
+  root.querySelector('#fab-newticket').addEventListener('click', () => {
+    fabStack.classList.remove('open');
     openNewTicketSheet({ onCreated: () => refresh() });
+  });
+  root.querySelector('#fab-expense').addEventListener('click', () => {
+    fabStack.classList.remove('open');
+    openExpenseSheet(todayStr(), () => refresh());
   });
   root.querySelector('#search-shortcut').addEventListener('click', () => navigate('/more/history'));
   root.querySelector('#bell-btn').addEventListener('click', async () => {

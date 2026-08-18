@@ -1,7 +1,8 @@
 // Módulo de anuncios (Google AdSense) — discretos y solo en pantallas
-// secundarias (Stats, Historial, Config). Nunca en el flujo de Tickets/Día
-// ni como interstitial/popup. Quien haya donado (ver js/donate.js) no ve
-// ningún anuncio en ninguna pantalla.
+// secundarias/de configuración (Stats, Historial, Config, Trabajadores,
+// Productos, Copia de seguridad, Más). Nunca en el flujo diario de trabajo
+// (Tickets, Día, Asistencia) ni como interstitial/popup. Quien haya donado
+// (ver js/donate.js) no ve ningún anuncio en ninguna pantalla.
 //
 // CÓMO ACTIVARLO (ver README.md, sección "Monetización con anuncios"):
 // 1. Crea una cuenta en https://adsense.google.com y agrega tu sitio.
@@ -19,6 +20,10 @@ export const AD_SLOTS = {
   stats: '0000000000',
   history: '0000000000',
   config: '0000000000',
+  workers: '0000000000',
+  products: '0000000000',
+  backup: '0000000000',
+  more: '0000000000',
 };
 
 const isLocalhost = ['localhost', '127.0.0.1', ''].includes(location.hostname);

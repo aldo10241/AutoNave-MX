@@ -9,7 +9,9 @@ export function render(container) {
 
   const root = el(`
     <div>
-      <div class="topbar"><h1>Asistencia</h1><div class="spacer"></div></div>
+      <div class="topbar"><h1>Asistencia</h1><div class="spacer"></div>
+        <button class="action" id="at-summary-btn" title="Resumen de horas">📊</button>
+      </div>
       <div class="view">
         <div class="row mb16">
           <button class="btn btn-ghost btn-sm" id="at-prev">← Anterior</button>
@@ -33,6 +35,7 @@ export function render(container) {
     currentDate = addDays(currentDate, 1);
     refresh();
   });
+  root.querySelector('#at-summary-btn').addEventListener('click', () => openSummarySheet(s));
 
   async function refresh() {
     label.textContent = formatDateLong(currentDate);
@@ -146,4 +149,70 @@ function openEditSheet(date, worker, rec, onSaved) {
   }
 
   openSheet(`Asistencia — ${worker.name}`, body);
+}
+
+function formatHours(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+}
+
+function openSummarySheet(s) {
+  let range = 'week';
+
+  const body = el(`
+    <div>
+      <div class="tabs" id="sum-tabs">
+        <button data-r="today">Hoy</button>
+        <button data-r="week" class="active">7 días</button>
+        <button data-r="month">Este mes</button>
+      </div>
+      <div class="list" id="sum-list"></div>
+    </div>
+  `);
+  const list = body.querySelector('#sum-list');
+
+  body.querySelectorAll('#sum-tabs button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      body.querySelectorAll('#sum-tabs button').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      range = btn.dataset.r;
+      load();
+    });
+  });
+
+  async function load() {
+    const today = todayStr();
+    const start = range === 'today' ? today : range === 'week' ? addDays(today, -6) : today.slice(0, 8) + '01';
+    const records = await DB.getAttendanceInRange(start, today);
+    const workers = s.workers.filter((w) => w.active);
+
+    list.innerHTML = '';
+    if (workers.length === 0) {
+      list.innerHTML = emptyState('👷', 'Sin trabajadores', 'Agrega trabajadores en Más → Trabajadores.');
+      return;
+    }
+
+    workers.forEach((w) => {
+      const workerRecords = records.filter((r) => r.workerId === w.id);
+      const diasPresente = workerRecords.filter((r) => r.checkIn).length;
+      const minutos = workerRecords.reduce((sum, r) => {
+        if (!r.checkIn || !r.checkOut) return sum;
+        return sum + (new Date(r.checkOut) - new Date(r.checkIn)) / 60000;
+      }, 0);
+      list.appendChild(el(`
+        <div class="row" style="background:var(--surface); box-shadow:var(--shadow-sm); border-radius:var(--radius-sm); padding:12px 14px;">
+          <div>
+            <strong>🧽 ${escapeHtml(w.name)}</strong>
+            <div class="subtext mt8">${diasPresente} día(s) presente</div>
+          </div>
+          <strong style="font-variant-numeric:tabular-nums;">${formatHours(minutos)}</strong>
+        </div>
+      `));
+    });
+  }
+
+  load();
+  openSheet('Resumen de horas', body);
 }

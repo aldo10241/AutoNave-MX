@@ -8,7 +8,8 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
-import { firebaseConfig, isFirebaseConfigured } from './firebaseConfig.js';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check.js';
+import { firebaseConfig, isFirebaseConfigured, RECAPTCHA_SITE_KEY } from './firebaseConfig.js';
 
 export const firebaseReady = isFirebaseConfigured();
 
@@ -26,6 +27,20 @@ if (firebaseReady) {
     });
   } catch (e) {
     _db = getFirestore(app);
+  }
+
+  // Protección anti-bots gratuita (ver README → "Bloquear bots en el
+  // registro"). Mientras no configures tu llave de reCAPTCHA, se omite sin
+  // romper nada.
+  if (RECAPTCHA_SITE_KEY && !RECAPTCHA_SITE_KEY.startsWith('TU_')) {
+    try {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
+        isTokenAutoRefreshEnabled: true,
+      });
+    } catch (e) {
+      /* si falla, la app sigue funcionando sin App Check */
+    }
   }
 }
 

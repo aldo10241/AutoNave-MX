@@ -7,6 +7,7 @@ import {
   GoogleAuthProvider,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   updateProfile,
 } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js';
 
@@ -32,6 +33,24 @@ export function getUserLabel() {
   return currentUser.displayName || currentUser.email || 'Cuenta';
 }
 
+// Con Google el correo ya viene verificado por Google; solo pedimos
+// verificación para cuentas creadas con correo/contraseña.
+export function needsEmailVerification() {
+  if (!currentUser) return false;
+  const isPasswordAccount = currentUser.providerData.some((p) => p.providerId === 'password');
+  return isPasswordAccount && !currentUser.emailVerified;
+}
+
+export async function resendVerificationEmail() {
+  if (!currentUser) return { error: 'No hay sesión activa.' };
+  try {
+    await sendEmailVerification(currentUser);
+    return { ok: true };
+  } catch (err) {
+    return { error: friendlyError(err) };
+  }
+}
+
 function friendlyError(err) {
   const map = {
     'auth/invalid-email': 'Ese correo no es válido.',
@@ -43,6 +62,8 @@ function friendlyError(err) {
     'auth/popup-closed-by-user': 'Cerraste la ventana antes de terminar.',
     'auth/network-request-failed': 'Sin conexión a internet.',
     'auth/unauthorized-domain': 'Este dominio no está autorizado en Firebase (agrega tu dominio en Authentication → Settings → Authorized domains).',
+    'auth/too-many-requests': 'Demasiados intentos. Espera un momento y vuelve a intentar.',
+    'auth/app-check-token-invalid': 'No pudimos verificar que eres una persona real. Recarga la página e intenta de nuevo.',
   };
   return map[err?.code] || err?.message || 'Ocurrió un error. Intenta de nuevo.';
 }
@@ -51,6 +72,7 @@ export async function signUp(email, password, name) {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
     if (name) await updateProfile(cred.user, { displayName: name });
+    sendEmailVerification(cred.user).catch(() => {});
     return { user: cred.user };
   } catch (err) {
     return { error: friendlyError(err) };

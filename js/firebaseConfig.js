@@ -26,3 +26,15 @@ export const firebaseConfig = {
 export function isFirebaseConfigured() {
   return firebaseConfig.apiKey !== 'TU_API_KEY' && !!firebaseConfig.apiKey;
 }
+
+// Bloquear bots en el registro (gratis) con Firebase App Check + reCAPTCHA v3.
+// Es invisible para la gente real — normalmente no les pide resolver nada.
+// 1. Ve a https://www.google.com/recaptcha/admin/create y registra tu sitio
+//    con reCAPTCHA v3, dominio autonavemx.com (y localhost para probar).
+//    Te da una "Clave del sitio" (pública) y una "Clave secreta" (privada).
+// 2. En Firebase Console → ⚙️ Configuración del proyecto → App Check →
+//    registra tu app web con el proveedor reCAPTCHA v3, pegando ahí la
+//    clave SECRETA (esa nunca va en este archivo).
+// 3. Pega aquí abajo la clave del SITIO (la pública).
+// 4. En App Check → pestaña "APIs", marca "Enforce" para Authentication.
+export const RECAPTCHA_SITE_KEY = 'TU_RECAPTCHA_SITE_KEY';
