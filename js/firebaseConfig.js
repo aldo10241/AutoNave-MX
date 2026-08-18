@@ -37,4 +37,4 @@ export function isFirebaseConfigured() {
 //    clave SECRETA (esa nunca va en este archivo).
 // 3. Pega aquí abajo la clave del SITIO (la pública).
 // 4. En App Check → pestaña "APIs", marca "Enforce" para Authentication.
-export const RECAPTCHA_SITE_KEY = 'TU_RECAPTCHA_SITE_KEY';
+export const RECAPTCHA_SITE_KEY = '6Ldq-IstAAAAANac5VppucYNQDCXg4xckweA5600';

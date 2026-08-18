@@ -9,6 +9,11 @@ const CATEGORIES = [
   { id: 'otro', e: '📦', t: 'Otro' },
 ];
 
+// Gastos registrados antes de agregar categorías/forma de pago (versión
+// anterior) usaban 'gasto' | 'propina' y no tenían paymentMethod. Los
+// mapeamos para que se sigan viendo bien y sigan contando en la caja.
+const LEGACY_CATEGORY_MAP = { gasto: 'otro', propina: 'propinas' };
+
 /**
  * Hoja para registrar un gasto (insumos, sueldos, propinas u otro).
  * Solo los gastos pagados en efectivo descuentan de la caja física del día.
@@ -84,5 +89,15 @@ export function openExpenseSheet(date, onSaved) {
 }
 
 export function categoryLabel(id) {
-  return CATEGORIES.find((c) => c.id === id) || CATEGORIES[3];
+  const resolved = LEGACY_CATEGORY_MAP[id] || id;
+  return CATEGORIES.find((c) => c.id === resolved) || CATEGORIES[3];
+}
+
+/**
+ * Los gastos guardados antes de que existiera "forma de pago" no tienen ese
+ * campo. En ese entonces todo gasto salía de la caja, así que por
+ * compatibilidad los seguimos tratando como efectivo.
+ */
+export function isCashExpense(e) {
+  return (e.paymentMethod || 'efectivo') === 'efectivo';
 }

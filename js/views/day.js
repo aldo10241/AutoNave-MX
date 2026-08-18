@@ -1,7 +1,7 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
 import { todayStr, addDays, formatDateLong, money, toast, el, escapeHtml } from '../utils.js';
-import { openExpenseSheet, categoryLabel } from './expenseModal.js';
+import { openExpenseSheet, categoryLabel, isCashExpense } from './expenseModal.js';
 
 export function render(container, { navigate }) {
   const s = state.settings;
@@ -55,8 +55,10 @@ export function render(container, { navigate }) {
       else if (t.paymentMethod === 'mixto') { cash += t.total / 2; digital += t.total / 2; }
     });
 
-    // Solo lo pagado en efectivo sale físicamente de la caja.
-    const gastosEfectivo = expenses.filter((e) => e.paymentMethod === 'efectivo').reduce((sum, e) => sum + e.amount, 0);
+    // Solo lo pagado en efectivo sale físicamente de la caja (los gastos
+    // guardados antes de tener "forma de pago" se tratan como efectivo,
+    // igual que antes).
+    const gastosEfectivo = expenses.filter(isCashExpense).reduce((sum, e) => sum + e.amount, 0);
     const totalCaja = reserve + cash - gastosEfectivo;
     const ingresoTotal = closed.reduce((sum, t) => sum + t.total, 0);
     const serviciosAdic = closed.reduce((sum, t) => sum + (t.services || []).length, 0);
@@ -120,7 +122,7 @@ export function render(container, { navigate }) {
           const row = el(`<div class="row" style="background:var(--surface); box-shadow:var(--shadow-sm); border-radius:var(--radius-sm); padding:11px 13px;">
             <div style="min-width:0;">
               <div style="font-weight:700; font-size:13.5px;">${cat.e} ${escapeHtml(e.concept)}</div>
-              <div class="subtext">${cat.t} · ${e.paymentMethod === 'efectivo' ? '💵 Efectivo' : '📱 Digital'}${e.note ? ' · ' + escapeHtml(e.note) : ''}</div>
+              <div class="subtext">${cat.t} · ${isCashExpense(e) ? '💵 Efectivo' : '📱 Digital'}${e.note ? ' · ' + escapeHtml(e.note) : ''}</div>
             </div>
             <span class="flex gap8" style="flex-shrink:0;">
               <strong>${money(e.amount)}</strong>
