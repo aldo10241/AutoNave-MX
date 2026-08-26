@@ -3,7 +3,6 @@ import { state } from '../store.js';
 import { uid, toast, el, escapeHtml } from '../utils.js';
 import { renderTopbar, emptyState } from '../ui.js';
 import { reloadSettings } from '../app.js';
-import { mountAd } from '../ads.js';
 
 export function render(container, { navigate }) {
   const root = el(`<div></div>`);
@@ -15,12 +14,10 @@ export function render(container, { navigate }) {
         <button class="btn btn-primary btn-sm" id="w-add">+ Agregar</button>
       </div>
       <div class="list" id="w-list"></div>
-      <div id="w-ad"></div>
     </div>
   `);
   root.appendChild(view);
   container.appendChild(root);
-  mountAd(view.querySelector('#w-ad'), 'workers');
 
   const list = view.querySelector('#w-list');
 

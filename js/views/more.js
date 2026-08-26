@@ -4,7 +4,6 @@ import { canInstall, promptInstall, isStandalone, isIos } from '../install.js';
 import { getCurrentUser, getUserLabel, logOut, needsEmailVerification, resendVerificationEmail } from '../auth.js';
 import { getTheme, toggleTheme } from '../theme.js';
 import { DONATION_URL, isDonationConfigured } from '../donate.js';
-import { mountAd } from '../ads.js';
 
 const ITEMS = [
   { path: '/more/history', e: '🕘', t: 'Historial', d: 'Todos los tickets, filtra por fecha o placa' },
@@ -42,19 +41,17 @@ export function render(container, { navigate }) {
           <span style="font-size:24px;">✨</span>
           <div>
             <p style="font-weight:800; font-size:14.5px;">Gracias por tu apoyo</p>
-            <p class="subtext">Tu cuenta ya no muestra anuncios.</p>
+            <p class="subtext">Tu donación ayuda a mantener el proyecto activo.</p>
           </div>
         </div>` : isDonationConfigured() ? `
         <div class="card" style="margin-top:20px; display:flex; align-items:center; gap:12px;">
           <span style="font-size:24px;">☕</span>
           <div style="flex:1;">
             <p style="font-weight:800; font-size:14.5px;">¿Te sirve AutoNave MX?</p>
-            <p class="subtext">Apoya el proyecto y de paso quitas los anuncios de tu cuenta.</p>
+            <p class="subtext">Apoya el proyecto, es gratis y de código abierto.</p>
           </div>
           <a href="${DONATION_URL}" rel="noopener" class="btn btn-primary" style="width:auto; padding:10px 16px; font-size:13.5px;">Donar</a>
         </div>` : ''}
-
-        <div id="more-ad"></div>
 
         <div class="card center" style="margin-top:${(s.donorAdFree || isDonationConfigured()) ? '12px' : '20px'};">
           <p class="subtext center">AutoNave MX · gratis y de código abierto</p>
@@ -64,7 +61,6 @@ export function render(container, { navigate }) {
     </div>
   `);
   container.appendChild(root);
-  mountAd(root.querySelector('#more-ad'), 'more');
 
   root.querySelector('#theme-toggle').addEventListener('click', (e) => {
     const mode = toggleTheme();

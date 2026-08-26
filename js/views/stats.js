@@ -1,7 +1,6 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
 import { todayStr, addDays, money, toCSV, downloadFile, el } from '../utils.js';
-import { mountAd } from '../ads.js';
 
 export function render(container) {
   const s = state.settings;
@@ -141,7 +140,6 @@ export function render(container) {
         <div class="bars" id="st-bars"></div>
         <p class="subtext center mt8">Barras = ingresos · número = carros</p>
       </div>
-      <div id="st-ad"></div>
     `));
 
     const barsWrap = content.querySelector('#st-bars');
@@ -156,8 +154,6 @@ export function render(container) {
         </div>
       `));
     });
-
-    mountAd(content.querySelector('#st-ad'), 'stats');
   }
 
   refresh();

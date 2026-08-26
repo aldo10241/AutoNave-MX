@@ -15,7 +15,7 @@ El diseño es una identidad propia: panel oscuro y elegante, tarjetas redondeada
 - **Estadísticas**: totales por hoy/7 días/mes/rango personalizado, gráfico de los últimos 7 días, exportación a CSV (Excel).
 - **Historial**, **Trabajadores**, **Productos** y **Configuración** (tipos de vehículo y precios, servicios adicionales, reserva de caja). Todos los montos se muestran en **pesos mexicanos (MXN)**.
 - **Copia de seguridad**: exporta/importa todos los datos en un archivo `.json`.
-- **Modo claro/oscuro**, instalable como app (Android/iOS/escritorio), funciona offline gracias al caché local de Firestore, e incluye espacios discretos para anuncios (ver más abajo).
+- **Modo claro/oscuro**, instalable como app (Android/iOS/escritorio), funciona offline gracias al caché local de Firestore.
 
 ## Estructura del proyecto
 
@@ -25,7 +25,6 @@ privacidad.html          aviso de privacidad (edítalo con tus datos, ver secci�
 terminos.html            términos de uso (edítalo con tus datos, ver sección 7)
 manifest.webmanifest     metadata de la PWA (nombre, ícono, colores)
 sw.js                    service worker (caché offline del "cascarón" de la app)
-ads.txt                  para cuando actives Google AdSense
 css/styles.css           todo el sistema de diseño (panel oscuro, tarjetas y navegación)
 js/
   app.js                 arranque + router + control de sesión (login/onboarding/app)
@@ -35,8 +34,7 @@ js/
   db.js                  capa de datos (Firestore, organizado por usuario)
   store.js               estado compartido en memoria
   ui.js                  helpers de interfaz (topbar, sheets/modales, tarjeta de ticket)
-  ads.js                 módulo de anuncios (AdSense)
-  donate.js              enlace opcional de donación (Stripe/Ko-fi/etc.) + bono "sin anuncios"
+  donate.js              enlace opcional de donación (Stripe/Ko-fi/etc.)
   install.js             lógica de "instalar app"
   theme.js               preferencia de tema claro/oscuro
   utils.js               formateo, toasts, exportar CSV, etc.
@@ -166,41 +164,19 @@ Una vez publicada:
 - **iPhone (Safari)**: entra al sitio → botón compartir (cuadrito con flecha) → **"Agregar a pantalla de inicio"**. iOS no permite instalar PWAs desde otros navegadores, tiene que ser Safari.
 - **Escritorio (Chrome/Edge)**: ícono de instalar en la barra de direcciones, o menú → "Instalar AutoNave MX".
 
-Después de instalada, abre igual que cualquier app y funciona sin conexión — el service worker cachea el "cascarón" (HTML/CSS/JS) y Firestore cachea tus datos localmente; todo se sincroniza solo al recuperar internet (excepto el primer login, que sí necesita conexión, y los anuncios).
+Después de instalada, abre igual que cualquier app y funciona sin conexión — el service worker cachea el "cascarón" (HTML/CSS/JS) y Firestore cachea tus datos localmente; todo se sincroniza solo al recuperar internet (excepto el primer login, que sí necesita conexión).
 
 > **Importante:** actualiza el número `CACHE_VERSION` al inicio de `sw.js` cada vez que subas cambios importantes. Así el service worker sabe que debe descargar la versión nueva en vez de seguir usando la copia guardada en el celular de tus usuarios.
 
-## 6. Monetización con anuncios (Google AdSense)
+## 6. Monetización: donaciones (sin anuncios)
 
-La app ya trae listo el "enchufe" para anuncios discretos (`js/ads.js`), colocados **solo** en pantallas secundarias: Estadísticas, Historial y Configuración — nunca en el flujo de abrir/cerrar tickets, y nunca como pantallas completas ni pop-ups.
+**La app ya no usa Google AdSense.** Se probó brevemente, pero Google rechazó el sitio por sus políticas de "anuncios en pantallas sin contenido de publicadores": AdSense está pensado para sitios de contenido editorial (blogs, noticias, artículos) indexables públicamente, y esta app es justo lo opuesto — una herramienta de trabajo (tickets, caja, asistencia) que además vive casi toda detrás de un login, por lo que Google ni siquiera puede "ver" el contenido real. Insistir con AdSense en una app así corre el riesgo de rechazos repetidos o hasta una suspensión de la cuenta de AdSense a futuro, así que se quitó por completo (`js/ads.js` y los `<script>` de AdSense en `index.html`/`privacidad.html`/`terminos.html` ya no existen).
 
-Pasos para activarlos:
+Si en algún momento quieres generar ingresos con anuncios, lo correcto sería un sitio de contenido **aparte** de la app (por ejemplo un blog público con guías reales para dueños de autolavados) — no dentro de las pantallas de la herramienta.
 
-1. Ve a [adsense.google.com](https://adsense.google.com) y agrega tu sitio (la URL de GitHub Pages, o tu dominio propio si conectaste uno).
-2. Google revisa el sitio (puede tardar días o semanas; necesita contenido real y algo de tráfico/uso).
-3. Cuando te aprueben, copia tu ID de cliente (`ca-pub-XXXXXXXXXXXXXXXX`) y pégalo en `js/ads.js`, reemplazando `ADSENSE_CLIENT`.
-4. Crea 2 o 3 bloques de anuncio tipo "Display" en tu panel de AdSense y copia sus IDs de bloque (`data-ad-slot`) en el objeto `AD_SLOTS` del mismo archivo (`stats`, `history`, `config`).
-5. Actualiza `ads.txt` en la raíz del proyecto con la línea que te indique AdSense.
-6. Sube los cambios (`git add . && git commit -m "activar anuncios" && git push`).
+Por ahora la única vía de monetización es el botón opcional de **"Donar"** en **Más**, pensado para que quien use la app y le sirva pueda apoyarte directamente.
 
-**Nota sobre `ads.txt` y GitHub Pages:** el archivo `ads.txt` normalmente se valida en la raíz del dominio (`tudominio.com/ads.txt`). Con el dominio propio ya conectado (ver sección 4 → "Dominio propio"), `ads.txt` queda automáticamente en `autonavemx.com/ads.txt` — justo donde AdSense lo espera.
-
-Mientras `ADSENSE_CLIENT` conserve el valor de ejemplo, la app **no carga ningún anuncio real** (evita errores y espacios vacíos para tus usuarios).
-
-### Alternativas si AdSense no aprueba tu sitio todavía
-
-- [Carbon Ads](https://www.carbonads.net/) o [BuySellAds](https://www.buysellads.com/): redes más pequeñas, suelen aprobar más rápido.
-- Un simple banner de "apóyanos" con enlace a Ko-fi / Buy Me a Coffee mientras consigues aprobación (puedes reemplazar temporalmente el contenido de `mountAd()` en `js/ads.js`).
-
-### Honestidad sobre cuánto puedes ganar con los anuncios
-
-Los anuncios solo aparecen en pantallas secundarias (Estadísticas, Historial, Config), así que hay pocas impresiones por negocio al día. Con RPM típico de tráfico mexicano (~$1-3 USD por cada 1,000 impresiones), esto se siente más como para cubrir gastos simbólicos que como un ingreso real, salvo que la app la usen cientos de negocios de forma activa. No la conviertas en tu plan de negocio principal.
-
-### Donaciones (probablemente más realista que los anuncios)
-
-Además de los anuncios, la app tiene un botón opcional de "Donar" en **Más**, pensado para que quien la use y le sirva pueda apoyarte directamente — suele rendir más rápido que AdSense para una herramienta de nicho como esta. Quien dona, además, deja de ver anuncios en su cuenta automáticamente.
-
-**Recomendado: Stripe Payment Link** — es la única opción de las tres que cobra en pesos mexicanos de forma nativa (no dólares) y que puede activar el "sin anuncios" automáticamente al volver del pago.
+**Recomendado: Stripe Payment Link** — cobra en pesos mexicanos de forma nativa (no dólares) y puede mostrar un agradecimiento automático al volver del pago.
 
 1. Crea tu cuenta en [dashboard.stripe.com/register](https://dashboard.stripe.com/register) (correo, nombre, cómo te van a depositar — cuenta bancaria mexicana). Esto lo tienes que hacer tú; nadie más puede crear tu cuenta de pagos.
 2. Ya adentro, ve a **Payment links** (Enlaces de pago) en el menú lateral → **+ Crear enlace de pago**.
@@ -210,19 +186,19 @@ Además de los anuncios, la app tiene un botón opcional de "Donar" en **Más**,
    ```
    https://autonavemx.com/?gracias=1#/more
    ```
-   Ese `?gracias=1` es lo que la app detecta para quitar los anuncios al volver — si cambias esa palabra aquí, también cámbiala en `DONATION_RETURN_PARAM` dentro de [js/donate.js](js/donate.js).
+   Ese `?gracias=1` es lo que la app detecta para mostrarte el agradecimiento al volver — si cambias esa palabra aquí, también cámbiala en `DONATION_RETURN_PARAM` dentro de [js/donate.js](js/donate.js).
 6. **Crear enlace**. Te da una URL tipo `https://buy.stripe.com/xxxxxxxx`. Cópiala.
 7. Pégala en [js/donate.js](js/donate.js), reemplazando el valor vacío de `DONATION_URL`.
 
 Stripe cobra una comisión por cada donación (normal en cualquier procesador): aproximadamente 3.6% + $3 MXN por transacción con tarjetas mexicanas, más IVA sobre esa comisión — de una donación de $100 MXN te llegarían netos alrededor de $92 MXN.
 
-**Nota sobre el "sin anuncios":** como la app no tiene servidor propio, no hay forma 100% blindada de confirmar el pago real — la app confía en que Stripe te regresó porque el pago fue exitoso. Es más que suficiente dado que hablamos de anuncios que valen centavos; no es algo por lo que valga la pena complicar la app con funciones en la nube.
+**Nota:** como la app no tiene servidor propio, no hay forma 100% blindada de confirmar el pago real — la app confía en que Stripe te regresó porque el pago fue exitoso. No vale la pena complicar la app con funciones en la nube solo para blindar el mensaje de agradecimiento.
 
-**Alternativas más simples (pero sin el bono de "sin anuncios" automático):** [Ko-fi](https://ko-fi.com) o PayPal.me — más rápidas de configurar, aunque Ko-fi muestra los montos en USD salvo que cambies la configuración regional de tu cuenta.
+**Alternativas más simples (pero sin el agradecimiento automático):** [Ko-fi](https://ko-fi.com) o PayPal.me — más rápidas de configurar, aunque Ko-fi muestra los montos en USD salvo que cambies la configuración regional de tu cuenta.
 
 ## 7. Aviso de privacidad y términos de uso
 
-Como la app guarda datos personales (correo, nombre del negocio, y placas de vehículos que registras en los tickets) y usa AdSense, la ley mexicana y las políticas de Google exigen un aviso de privacidad — ya viene incluido:
+Como la app guarda datos personales (correo, nombre del negocio, y placas de vehículos que registras en los tickets), la ley mexicana exige un aviso de privacidad — ya viene incluido:
 
 - [privacidad.html](privacidad.html) — aviso de privacidad (identidad del responsable, qué datos se recaban, para qué, con quién se comparten, cómo ejercer tus derechos ARCO).
 - [terminos.html](terminos.html) — términos de uso (servicio "tal cual", responsabilidad, donaciones, propiedad intelectual).

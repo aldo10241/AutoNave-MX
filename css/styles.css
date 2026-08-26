@@ -484,12 +484,6 @@ button.ticket-card:active{ transform:scale(.985); }
 .bars .bar-label{font-size:10.5px; color:var(--text-faint); font-weight:700;}
 .bars .bar-value{font-size:10.5px; color:var(--text-dim); font-weight:800;}
 
-.ad-slot{
-  margin:16px 0; padding:10px; border-radius:var(--radius-sm); border:1.5px dashed var(--border);
-  text-align:center; color:var(--text-faint); font-size:11px; min-height:60px;
-  display:flex; align-items:center; justify-content:center; overflow:hidden;
-}
-
 .install-banner{
   display:flex; align-items:center; gap:10px; background:var(--accent-soft-bg);
   border-radius:var(--radius); padding:13px 15px; margin-bottom:15px;

@@ -2,7 +2,6 @@ import { DB } from '../db.js';
 import { todayStr, addDays, formatDateShort, el } from '../utils.js';
 import { renderTopbar, emptyState, renderTicketRow } from '../ui.js';
 import { openCloseTicketSheet, openTicketDetailSheet } from './ticketModal.js';
-import { mountAd } from '../ads.js';
 
 export function render(container, { navigate }) {
   let range = 'week';
@@ -22,7 +21,6 @@ export function render(container, { navigate }) {
         <button data-r="all">Todo</button>
       </div>
       <div class="list" id="hi-list"></div>
-      <div id="hi-ad"></div>
     </div>
   `);
   root.appendChild(view);
@@ -75,8 +73,6 @@ export function render(container, { navigate }) {
         else openTicketDetailSheet(ticket);
       }));
     });
-
-    mountAd(view.querySelector('#hi-ad'), 'history');
   }
 
   refresh();

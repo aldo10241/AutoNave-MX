@@ -1,7 +1,7 @@
 // Service worker de AutoNave MX.
 // IMPORTANTE: sube este número cada vez que cambies archivos para forzar
 // la actualización del caché en los dispositivos de los usuarios.
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v12';
 const CACHE_NAME = `autonave-mx-${CACHE_VERSION}`;
 
 const ASSETS = [
@@ -14,7 +14,6 @@ const ASSETS = [
   './js/app.js',
   './js/db.js',
   './js/utils.js',
-  './js/ads.js',
   './js/donate.js',
   './js/store.js',
   './js/ui.js',
@@ -66,7 +65,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // no cachear anuncios/terceros
+  if (url.origin !== self.location.origin) return; // no cachear recursos de terceros
 
   // Navegación: red primero, con respaldo en caché (para funcionar offline).
   if (req.mode === 'navigate') {

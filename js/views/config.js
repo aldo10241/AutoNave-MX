@@ -3,7 +3,6 @@ import { state } from '../store.js';
 import { uid, money, toast, el, escapeHtml } from '../utils.js';
 import { renderTopbar, openSheet, closeSheet } from '../ui.js';
 import { reloadSettings } from '../app.js';
-import { mountAd } from '../ads.js';
 
 const EMOJI_CHOICES = ['🏍️', '🚗', '🚙', '🚐', '🚚', '🚌', '🚲', '🚕', '🚓', '🚑', '🚒', '🛵', '⛵', '🚜', '🚘', '🚖'];
 
@@ -48,8 +47,6 @@ export function render(container, { navigate }) {
         <input id="c-sv-price" type="number" inputmode="decimal" placeholder="0" style="width:80px;" />
         <button class="btn btn-primary btn-sm" id="c-sv-add">+</button>
       </div>
-
-      <div id="c-ad"></div>
 
       <div class="section-title">Zona de peligro</div>
       <button class="btn btn-outline" id="c-goto-backup" style="border-color:var(--red); color:var(--red);">Borrar todos los datos</button>
@@ -119,8 +116,6 @@ export function render(container, { navigate }) {
     });
 
     view.querySelector('#c-goto-backup').addEventListener('click', () => navigate('/more/backup'));
-
-    mountAd(view.querySelector('#c-ad'), 'config');
   }
 
   function openEmojiPicker(vehicleType, onPick) {

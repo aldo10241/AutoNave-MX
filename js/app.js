@@ -101,10 +101,9 @@ function showLoadingScreen() {
 let routerBound = false;
 
 // Si Stripe nos regresa desde un pago exitoso (ver README → "Donaciones"),
-// marcamos la cuenta como "sin anuncios". No es una verificación blindada
-// (la app es 100% estática, sin servidor propio para validar el pago real),
-// pero dado que los anuncios valen centavos, el riesgo de que alguien la
-// active sin donar es irrelevante — no vale la pena complicar esto con
+// marcamos la cuenta como donante para mostrarle un agradecimiento. No es
+// una verificación blindada (la app es 100% estática, sin servidor propio
+// para validar el pago real), pero no vale la pena complicar esto con
 // funciones en la nube por tan poco.
 async function checkDonationReturn(settings) {
   const params = new URLSearchParams(location.search);
@@ -115,7 +114,7 @@ async function checkDonationReturn(settings) {
 
   const updated = { ...settings, donorAdFree: true };
   await DB.saveSettings(updated);
-  toast('¡Gracias por tu apoyo! Ya no verás anuncios en tu cuenta.', 'success');
+  toast('¡Gracias por tu apoyo!', 'success');
   return updated;
 }
 
