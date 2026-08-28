@@ -9,7 +9,7 @@ El diseño es una identidad propia: panel oscuro y elegante, tarjetas redondeada
 ## Qué incluye
 
 - **Login por cuenta**: correo/contraseña o Google. Tus datos quedan ligados a tu cuenta, no al dispositivo.
-- **Tickets**: abre un ticket al recibir un vehículo, agrega servicios adicionales y consumo extra al cerrarlo, cobra en efectivo/digital/mixto/crédito, comparte el comprobante por WhatsApp o imprímelo/guárdalo como PDF.
+- **Tickets**: abre un ticket al recibir un vehículo, agrega servicios adicionales y consumo extra al cerrarlo, cobra en efectivo/digital/mixto/crédito, comparte el comprobante por WhatsApp o imprímelo/guárdalo como PDF. Cada ticket admite hasta 3 fotos de evidencia opcionales (ver sección 2.4).
 - **Día**: desglose de caja (reserva + cobros − gastos − propinas), resumen del día, cierre de día.
 - **Asistencia**: marca entrada/salida de cada trabajador por día.
 - **Estadísticas**: totales por hoy/7 días/mes/rango personalizado, gráfico de los últimos 7 días, exportación a CSV (Excel).
@@ -29,9 +29,10 @@ css/styles.css           todo el sistema de diseño (panel oscuro, tarjetas y na
 js/
   app.js                 arranque + router + control de sesión (login/onboarding/app)
   firebaseConfig.js      tus claves de Firebase (las pegas tú, ver sección 2)
-  firebase.js            inicializa Firebase (Auth + Firestore con caché offline)
+  firebase.js            inicializa Firebase (Auth + Firestore con caché offline + Storage)
   auth.js                login/registro/Google/logout/recuperar contraseña
   db.js                  capa de datos (Firestore, organizado por usuario)
+  photos.js              evidencia fotográfica de tickets (Storage): comprime y sube/borra fotos
   store.js               estado compartido en memoria
   ui.js                  helpers de interfaz (topbar, sheets/modales, tarjeta de ticket)
   donate.js              enlace opcional de donación (Stripe/Ko-fi/etc.)
@@ -111,6 +112,52 @@ service cloud.firestore {
 Con esto ya puedes recargar la app local (`python -m http.server 8080`), crear una cuenta y usarla. Los límites gratuitos de Firestore (Spark) son generosos para un carwash: ~50,000 lecturas y ~20,000 escrituras al día, 1 GB de almacenamiento — normalmente no se acercan a eso.
 
 > Si quieres que varios empleados usen la misma cuenta (una sola caja compartida), simplemente inicien sesión todos con el mismo correo y contraseña. El "login por usuario" de esta app está pensado para un dueño/negocio por cuenta, no para roles distintos por empleado (eso quedaría como mejora futura).
+
+### 2.4 Evidencia fotográfica en tickets (Storage, opcional)
+
+Cada ticket puede llevar hasta **3 fotos opcionales** (igual que la placa: nunca es obligatorio). Antes de subirlas, la app las redimensiona y comprime en el propio navegador (máx. 1280px de lado, JPEG al 72%), así que cada foto pesa normalmente 150-300 KB en vez de varios MB.
+
+Esto usa **Cloud Storage for Firebase**, que a diferencia de Firestore/Authentication **requiere el plan Blaze** (pago por uso, con tarjeta registrada) — aunque el uso normal de esta app se quede en $0. El nivel sin costo de Storage es: 5 GB guardados, 1 GB de descarga al día, 20,000 subidas al día. Si algún día lo rebasas, el excedente cuesta centavos de dólar por GB (ver sección de alertas abajo para dormir tranquilo).
+
+**Activar Blaze:**
+
+1. Menú lateral de Firebase Console → ⚙️ **Uso y facturación** (o el botón "Actualizar" junto a "Spark" abajo a la izquierda) → **Modificar plan** → elige **Blaze**.
+2. Te pide vincular una cuenta de facturación de Google Cloud — si no tienes una, te guía para crearla y agregar una tarjeta.
+3. Confirmar. No se te cobra nada solo por cambiar de plan; solo si tu uso rebasa las cuotas gratis mencionadas arriba.
+
+**Activar Storage:**
+
+1. Menú lateral → **Storage** → **Comenzar** (Get started) → elige la misma región que usaste en Firestore → Listo.
+2. Ve a la pestaña **Reglas** y reemplaza todo por esto (cada quien solo lee/escribe/borra sus propias fotos, y se rechaza cualquier archivo mayor a 2 MB o que no sea una imagen — una segunda barrera además de la compresión del navegador):
+
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{uid}/tickets/{ticketId}/{photoId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+                            && request.resource.size < 2 * 1024 * 1024
+                            && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+```
+
+3. **Publicar**.
+
+Mientras no actives Blaze ni completes estos pasos, el resto de la app sigue funcionando exactamente igual — subir una foto simplemente fallará con un aviso, sin romper nada más.
+
+**Alerta de presupuesto (para enterarte antes de cualquier cobro):**
+
+Una alerta de este tipo **te avisa por correo**, no detiene el cobro automáticamente — pero como Google factura mensual (no al instante), un aviso a tiempo te da margen de sobra para reaccionar.
+
+1. Ve a [console.cloud.google.com/billing](https://console.cloud.google.com/billing) y selecciona la cuenta de facturación ligada a tu proyecto de Firebase.
+2. Menú lateral → **Presupuestos y alertas** → **Crear presupuesto**.
+3. Ámbito: selecciona tu proyecto (ej. `autonave-mx`).
+4. Monto: pon algo bajo, por ejemplo **$1 o $5 USD** — no es un límite real, solo el disparador del aviso.
+5. Deja los umbrales por default (50%, 90%, 100%) y agrega tu correo en "destinatarios de alertas por correo electrónico".
+6. **Guardar**. En cuanto Storage empiece a generar cualquier cargo, te enteras por correo mucho antes de que sea significativo.
 
 ## 3. Subirlo a GitHub
 

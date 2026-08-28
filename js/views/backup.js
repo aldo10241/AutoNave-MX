@@ -3,6 +3,7 @@ import { state } from '../store.js';
 import { todayStr, downloadFile, toast, el } from '../utils.js';
 import { renderTopbar } from '../ui.js';
 import { reloadSettings } from '../app.js';
+import { deleteAllUserPhotos } from '../photos.js';
 
 export function render(container, { navigate }) {
   const root = el(`<div></div>`);
@@ -60,7 +61,8 @@ export function render(container, { navigate }) {
 
   view.querySelector('#b-wipe').addEventListener('click', async () => {
     if (!confirm('¿Seguro que quieres borrar TODOS los datos? Esta acción no se puede deshacer.')) return;
-    if (!confirm('Última confirmación: se perderán tickets, asistencia y configuración. ¿Continuar?')) return;
+    if (!confirm('Última confirmación: se perderán tickets, asistencia, configuración y fotos de evidencia. ¿Continuar?')) return;
+    await deleteAllUserPhotos();
     await DB.wipeAll();
     toast('Datos borrados. Recargando...', '');
     setTimeout(() => location.reload(), 1000);

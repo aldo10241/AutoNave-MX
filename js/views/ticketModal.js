@@ -3,6 +3,68 @@ import { state } from '../store.js';
 import { uid, shortId, todayStr, money, toast, el, formatTime, shareOrOpenWhatsApp, openPrintableReceipt, escapeHtml } from '../utils.js';
 import { openSheet, closeSheet } from '../ui.js';
 import { getUserLabel } from '../auth.js';
+import { uploadTicketPhoto, deleteTicketPhoto, deleteAllTicketPhotos, MAX_PHOTOS_PER_TICKET } from '../photos.js';
+
+// ---------------------------------------------------------------------------
+// Evidencia fotográfica (opcional, hasta MAX_PHOTOS_PER_TICKET por ticket)
+// ---------------------------------------------------------------------------
+function renderPhotoSection(wrap, ticket) {
+  ticket.photos = ticket.photos || [];
+  wrap.innerHTML = `
+    <label>Evidencia (opcional)</label>
+    <div class="photo-grid" id="pt-grid"></div>
+    <input type="file" accept="image/*" capture="environment" id="pt-file" style="display:none;" />
+  `;
+  const grid = wrap.querySelector('#pt-grid');
+  const fileInput = wrap.querySelector('#pt-file');
+
+  function draw() {
+    grid.innerHTML = '';
+    ticket.photos.forEach((photo) => {
+      const thumb = el(`
+        <div class="photo-thumb">
+          <img src="${photo.url}" alt="Evidencia" />
+          <button type="button" class="photo-remove" title="Quitar">✕</button>
+        </div>
+      `);
+      thumb.querySelector('.photo-remove').addEventListener('click', async () => {
+        thumb.style.opacity = '.4';
+        await deleteTicketPhoto(photo.path);
+        ticket.photos = ticket.photos.filter((p) => p.path !== photo.path);
+        await DB.updateTicket(ticket);
+        draw();
+      });
+      grid.appendChild(thumb);
+    });
+    if (ticket.photos.length < MAX_PHOTOS_PER_TICKET) {
+      const addBtn = el(`<button type="button" class="photo-add"><span class="e">📷</span><span>Agregar</span></button>`);
+      addBtn.addEventListener('click', () => fileInput.click());
+      grid.appendChild(addBtn);
+    }
+  }
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    fileInput.value = '';
+    if (!file || ticket.photos.length >= MAX_PHOTOS_PER_TICKET) return;
+    const addBtn = grid.querySelector('.photo-add');
+    if (addBtn) {
+      addBtn.disabled = true;
+      addBtn.querySelector('span:last-child').textContent = 'Subiendo...';
+    }
+    try {
+      const photo = await uploadTicketPhoto(ticket.id, file);
+      ticket.photos.push(photo);
+      await DB.updateTicket(ticket);
+      draw();
+    } catch (err) {
+      toast('No se pudo subir la foto. Revisa tu conexión.', 'error');
+      draw();
+    }
+  });
+
+  draw();
+}
 
 // ---------------------------------------------------------------------------
 // Nuevo ticket
@@ -177,6 +239,8 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
         <textarea id="ct-note" rows="2" placeholder="Nota interna...">${escapeHtml(draft.note)}</textarea>
       </div>
 
+      <div class="field mt8" id="ct-photos"></div>
+
       <button class="btn btn-outline mt16" id="ct-update">Actualizar ticket (sin cerrar)</button>
       <button class="btn btn-success mt8" id="ct-close">Cerrar · Cobrar ${money(computeTotal(draft))}</button>
       <button class="btn btn-danger mt8" id="ct-cancel">Cancelar ticket</button>
@@ -273,6 +337,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
   renderServices();
   renderExtras();
   renderTotals();
+  renderPhotoSection(body.querySelector('#ct-photos'), ticket);
 
   body.querySelector('#ct-base').addEventListener('input', renderTotals);
 
@@ -368,6 +433,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
   body.querySelector('#ct-cancel').addEventListener('click', async () => {
     if (!confirm('¿Cancelar y eliminar este ticket? Esta acción no se puede deshacer.')) return;
     await DB.deleteTicket(ticket.id);
+    await deleteAllTicketPhotos(ticket.id);
     toast('Ticket cancelado', '');
     closeSheet();
     if (onUpdated) onUpdated(null);
@@ -411,8 +477,12 @@ export function openTicketDetailSheet(ticket) {
         <div class="row"><span class="subtext">Abrió</span><span class="subtext">${escapeHtml(ticket.openedBy || '—')} · ${formatTime(ticket.openedAt)}</span></div>
         <div class="row"><span class="subtext">Cerró</span><span class="subtext">${escapeHtml(ticket.closedBy || '—')} · ${formatTime(ticket.closedAt)}</span></div>
       </div>
+
+      <div class="field mt8" id="td-photos"></div>
     </div>
   `);
+
+  renderPhotoSection(body.querySelector('#td-photos'), ticket);
 
   body.querySelector('#td-whatsapp').addEventListener('click', () => shareOrOpenWhatsApp('', receiptText));
   body.querySelector('#td-send').addEventListener('click', () => {

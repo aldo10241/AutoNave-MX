@@ -8,6 +8,7 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js';
+import { getStorage } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check.js';
 import { firebaseConfig, isFirebaseConfigured, RECAPTCHA_SITE_KEY } from './firebaseConfig.js';
 
@@ -15,6 +16,7 @@ export const firebaseReady = isFirebaseConfigured();
 
 let _auth = null;
 let _db = null;
+let _storage = null;
 
 if (firebaseReady) {
   const app = initializeApp(firebaseConfig);
@@ -28,6 +30,7 @@ if (firebaseReady) {
   } catch (e) {
     _db = getFirestore(app);
   }
+  _storage = getStorage(app);
 
   // Protección anti-bots gratuita (ver README → "Bloquear bots en el
   // registro"). Mientras no configures tu llave de reCAPTCHA, se omite sin
@@ -46,3 +49,4 @@ if (firebaseReady) {
 
 export const auth = _auth;
 export const db = _db;
+export const storage = _storage;
