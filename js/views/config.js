@@ -1,6 +1,6 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
-import { uid, money, toast, el, escapeHtml } from '../utils.js';
+import { uid, money, toast, el, escapeHtml, parseAmount } from '../utils.js';
 import { renderTopbar, openSheet, closeSheet } from '../ui.js';
 import { reloadSettings } from '../app.js';
 
@@ -28,14 +28,14 @@ export function render(container, { navigate }) {
 
       <div class="section-title">Reserva de caja</div>
       <p class="subtext mb8">Monto inicial que dejas en caja para tener cambio cada día.</p>
-      <input id="c-reserve" type="number" inputmode="decimal" value="${s.cashReserve}" />
+      <input id="c-reserve" type="text" inputmode="decimal" value="${s.cashReserve}" />
 
       <div class="section-title">Tipos de vehículo</div>
       <p class="subtext mb8">Precios sugeridos, editables al cerrar cada ticket. Toca el emoji para personalizarlo.</p>
       <div id="c-vehicle-list"></div>
       <div class="flex gap8 mt8">
         <input id="c-vt-name" type="text" placeholder="Nuevo tipo de vehículo" style="flex:1;" />
-        <input id="c-vt-price" type="number" inputmode="decimal" placeholder="0" style="width:80px;" />
+        <input id="c-vt-price" type="text" inputmode="decimal" placeholder="0" style="width:80px;" />
         <button class="btn btn-primary btn-sm" id="c-vt-add">+</button>
       </div>
 
@@ -44,7 +44,7 @@ export function render(container, { navigate }) {
       <div id="c-service-list"></div>
       <div class="flex gap8 mt8">
         <input id="c-sv-name" type="text" placeholder="Nuevo servicio" style="flex:1;" />
-        <input id="c-sv-price" type="number" inputmode="decimal" placeholder="0" style="width:80px;" />
+        <input id="c-sv-price" type="text" inputmode="decimal" placeholder="0" style="width:80px;" />
         <button class="btn btn-primary btn-sm" id="c-sv-add">+</button>
       </div>
 
@@ -54,7 +54,7 @@ export function render(container, { navigate }) {
 
     // nombre / reserva
     view.querySelector('#c-name').addEventListener('change', async (e) => { s.businessName = e.target.value.trim(); await persist(); });
-    view.querySelector('#c-reserve').addEventListener('change', async (e) => { s.cashReserve = Number(e.target.value) || 0; await persist(); });
+    view.querySelector('#c-reserve').addEventListener('change', async (e) => { s.cashReserve = parseAmount(e.target.value); await persist(); });
 
     // tipos de vehículo
     const vList = view.querySelector('#c-vehicle-list');
@@ -63,14 +63,14 @@ export function render(container, { navigate }) {
         <div class="editable-list-item">
           <button class="e" data-action="emoji" style="background:none; border:none;">${v.emoji}</button>
           <span class="name">${escapeHtml(v.name)}</span>
-          <input type="number" value="${v.price}" inputmode="decimal" />
+          <input type="text" value="${v.price}" inputmode="decimal" />
           <button class="del" data-action="del">🗑️</button>
         </div>
       `);
       row.querySelector('[data-action="emoji"]').addEventListener('click', () => openEmojiPicker(v, async (emoji) => {
         v.emoji = emoji; await persist(); draw();
       }));
-      row.querySelector('input').addEventListener('change', async (e) => { v.price = Number(e.target.value) || 0; await persist(); });
+      row.querySelector('input').addEventListener('change', async (e) => { v.price = parseAmount(e.target.value); await persist(); });
       row.querySelector('[data-action="del"]').addEventListener('click', async () => {
         if (!confirm(`¿Eliminar ${v.name}?`)) return;
         s.vehicleTypes = s.vehicleTypes.filter((x) => x.id !== v.id);
@@ -80,7 +80,7 @@ export function render(container, { navigate }) {
     });
     view.querySelector('#c-vt-add').addEventListener('click', async () => {
       const name = view.querySelector('#c-vt-name').value.trim();
-      const price = Number(view.querySelector('#c-vt-price').value) || 0;
+      const price = parseAmount(view.querySelector('#c-vt-price').value);
       if (!name) return;
       s.vehicleTypes.push({ id: uid(), emoji: '🚗', name, price });
       await persist(); draw();
@@ -94,11 +94,11 @@ export function render(container, { navigate }) {
         <div class="editable-list-item">
           <span class="e">✨</span>
           <span class="name">${escapeHtml(sv.name)}</span>
-          <input type="number" value="${sv.price}" inputmode="decimal" />
+          <input type="text" value="${sv.price}" inputmode="decimal" />
           <button class="del" data-action="del">🗑️</button>
         </div>
       `);
-      row.querySelector('input').addEventListener('change', async (e) => { sv.price = Number(e.target.value) || 0; await persist(); });
+      row.querySelector('input').addEventListener('change', async (e) => { sv.price = parseAmount(e.target.value); await persist(); });
       row.querySelector('[data-action="del"]').addEventListener('click', async () => {
         if (!confirm(`¿Eliminar ${sv.name}?`)) return;
         s.additionalServices = s.additionalServices.filter((x) => x.id !== sv.id);
@@ -108,7 +108,7 @@ export function render(container, { navigate }) {
     });
     view.querySelector('#c-sv-add').addEventListener('click', async () => {
       const name = view.querySelector('#c-sv-name').value.trim();
-      const price = Number(view.querySelector('#c-sv-price').value) || 0;
+      const price = parseAmount(view.querySelector('#c-sv-price').value);
       if (!name) return;
       s.additionalServices.push({ id: uid(), name, price });
       await persist(); draw();

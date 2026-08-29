@@ -1,5 +1,5 @@
 import { DB } from '../db.js';
-import { uid, toast, el } from '../utils.js';
+import { uid, toast, el, parseAmount } from '../utils.js';
 import { openSheet, closeSheet } from '../ui.js';
 
 const CATEGORIES = [
@@ -39,7 +39,7 @@ export function openExpenseSheet(date, onSaved) {
       </div>
       <div class="field">
         <label>Monto</label>
-        <input id="ex-amount" type="number" inputmode="decimal" placeholder="0.00" />
+        <input id="ex-amount" type="text" inputmode="decimal" placeholder="0.00" />
       </div>
       <div class="field">
         <label>Forma de pago</label>
@@ -73,7 +73,7 @@ export function openExpenseSheet(date, onSaved) {
 
   body.querySelector('#ex-save').addEventListener('click', async () => {
     const concept = body.querySelector('#ex-concept').value.trim();
-    const amount = Number(body.querySelector('#ex-amount').value);
+    const amount = parseAmount(body.querySelector('#ex-amount').value);
     const note = body.querySelector('#ex-note').value.trim();
     if (!concept || !amount) return toast('Completa la descripción y el monto', 'error');
     await DB.addExpense({

@@ -42,6 +42,19 @@ export function formatTime(iso) {
   return dt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 }
 
+// Convierte el valor de un campo de monto a número. Los campos usan
+// type="text" + inputmode="decimal" en vez de type="number" porque algunos
+// teclados (sobre todo Android) insertan una coma como separador decimal —
+// con type="number" el navegador considera eso inválido y .value regresa ''
+// silenciosamente, así que el monto se guardaba como $0 sin avisar.
+export function parseAmount(value) {
+  const str = String(value ?? '').trim();
+  if (!str) return 0;
+  const normalized = str.includes(',') && !str.includes('.') ? str.replace(',', '.') : str.replace(/,/g, '');
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : 0;
+}
+
 // La app trabaja únicamente en pesos mexicanos (MXN).
 const pesoFormatter = new Intl.NumberFormat('es-MX', {
   style: 'currency',

@@ -1,6 +1,6 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
-import { uid, shortId, todayStr, money, toast, el, formatTime, shareOrOpenWhatsApp, openPrintableReceipt, escapeHtml } from '../utils.js';
+import { uid, shortId, todayStr, money, toast, el, formatTime, shareOrOpenWhatsApp, openPrintableReceipt, escapeHtml, parseAmount } from '../utils.js';
 import { openSheet, closeSheet } from '../ui.js';
 import { getUserLabel } from '../auth.js';
 import { uploadTicketPhoto, deleteTicketPhoto, deleteAllTicketPhotos, MAX_PHOTOS_PER_TICKET } from '../photos.js';
@@ -194,7 +194,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
 
       <div class="field">
         <label>Precio de lavado</label>
-        <input id="ct-base" type="number" inputmode="decimal" value="${draft.basePrice}" />
+        <input id="ct-base" type="text" inputmode="decimal" value="${draft.basePrice}" />
       </div>
 
       <div class="field">
@@ -202,7 +202,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
         <div id="ct-services"></div>
         <div class="flex gap8 mt8">
           <input id="ct-custom-service-name" type="text" placeholder="Techo, asientos, aros..." />
-          <input id="ct-custom-service-price" type="number" inputmode="decimal" placeholder="0" style="width:90px;" />
+          <input id="ct-custom-service-price" type="text" inputmode="decimal" placeholder="0" style="width:90px;" />
           <button class="btn btn-primary btn-sm" id="ct-add-service">+</button>
         </div>
       </div>
@@ -215,7 +215,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
         <div id="ct-extras"></div>
         <div class="flex gap8 mt8">
           <input id="ct-custom-extra-name" type="text" placeholder="Otro item..." />
-          <input id="ct-custom-extra-price" type="number" inputmode="decimal" placeholder="0" style="width:90px;" />
+          <input id="ct-custom-extra-price" type="text" inputmode="decimal" placeholder="0" style="width:90px;" />
           <button class="btn btn-primary btn-sm" id="ct-add-extra">+</button>
         </div>
       </div>
@@ -255,7 +255,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
       const row = el(`<div class="addon-row${applied ? ' on' : ''}" data-id="${addon.id}">
         <div class="check">${applied ? '✓' : ''}</div>
         <div class="name">${escapeHtml(addon.name)}</div>
-        <input type="number" inputmode="decimal" value="${applied ? applied.price : addon.price}" ${applied ? '' : 'disabled'} />
+        <input type="text" inputmode="decimal" value="${applied ? applied.price : addon.price}" ${applied ? '' : 'disabled'} />
       </div>`);
       row.querySelector('.check, .name').closest('.addon-row');
       row.addEventListener('click', (e) => {
@@ -264,7 +264,8 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
         if (idx >= 0) {
           draft.services.splice(idx, 1);
         } else {
-          draft.services.push({ id: addon.id, name: addon.name, price: Number(row.querySelector('input').value) || addon.price });
+          const typed = row.querySelector('input').value;
+          draft.services.push({ id: addon.id, name: addon.name, price: typed === '' ? addon.price : parseAmount(typed) });
         }
         renderServices();
         renderTotals();
@@ -272,7 +273,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
       row.querySelector('input').addEventListener('input', (e) => {
         const item = draft.services.find((sv) => sv.id === addon.id);
         if (item) {
-          item.price = Number(e.target.value) || 0;
+          item.price = parseAmount(e.target.value);
           renderTotals();
         }
       });
@@ -283,11 +284,11 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
       const row = el(`<div class="addon-row on" data-custom-id="${custom.id}">
         <div class="check">✓</div>
         <div class="name">${escapeHtml(custom.name)}</div>
-        <input type="number" inputmode="decimal" value="${custom.price}" />
+        <input type="text" inputmode="decimal" value="${custom.price}" />
         <button style="color:var(--red); font-size:16px; padding:2px 4px;">✕</button>
       </div>`);
       row.querySelector('input').addEventListener('input', (e) => {
-        custom.price = Number(e.target.value) || 0;
+        custom.price = parseAmount(e.target.value);
         renderTotals();
       });
       row.querySelector('button').addEventListener('click', () => {
@@ -305,11 +306,11 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
     draft.extraItems.forEach((item) => {
       const row = el(`<div class="addon-row on">
         <div class="name">${escapeHtml(item.name)}</div>
-        <input type="number" inputmode="decimal" value="${item.price}" />
+        <input type="text" inputmode="decimal" value="${item.price}" />
         <button style="color:var(--red); font-size:16px; padding:2px 4px;">✕</button>
       </div>`);
       row.querySelector('input').addEventListener('input', (e) => {
-        item.price = Number(e.target.value) || 0;
+        item.price = parseAmount(e.target.value);
         renderTotals();
       });
       row.querySelector('button').addEventListener('click', () => {
@@ -322,7 +323,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
   }
 
   function renderTotals() {
-    draft.basePrice = Number(body.querySelector('#ct-base').value) || 0;
+    draft.basePrice = parseAmount(body.querySelector('#ct-base').value);
     const total = computeTotal(draft);
     const box = body.querySelector('#ct-totals');
     box.innerHTML = `
@@ -346,7 +347,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
     const priceInput = body.querySelector('#ct-custom-service-price');
     const name = nameInput.value.trim();
     if (!name) return;
-    draft.services.push({ id: uid(), name, price: Number(priceInput.value) || 0 });
+    draft.services.push({ id: uid(), name, price: parseAmount(priceInput.value) });
     nameInput.value = '';
     priceInput.value = '';
     renderServices();
@@ -358,7 +359,7 @@ export function openCloseTicketSheet(ticket, { onUpdated } = {}) {
     const priceInput = body.querySelector('#ct-custom-extra-price');
     const name = nameInput.value.trim();
     if (!name) return;
-    draft.extraItems.push({ name, price: Number(priceInput.value) || 0 });
+    draft.extraItems.push({ name, price: parseAmount(priceInput.value) });
     nameInput.value = '';
     priceInput.value = '';
     renderExtras();

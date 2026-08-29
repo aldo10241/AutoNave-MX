@@ -1,5 +1,5 @@
 import { DB } from '../db.js';
-import { uid, toast, el } from '../utils.js';
+import { uid, toast, el, parseAmount } from '../utils.js';
 
 function defaultSettings(businessName, cashReserve) {
   return {
@@ -7,7 +7,7 @@ function defaultSettings(businessName, cashReserve) {
     onboarded: true,
     businessName,
     currency: 'MXN',
-    cashReserve: Number(cashReserve) || 0,
+    cashReserve: parseAmount(cashReserve),
     createdAt: new Date().toISOString(),
     vehicleTypes: [
       { id: uid(), emoji: '🏍️', name: 'Moto', price: 10 },
@@ -48,7 +48,7 @@ export function render(container, { onDone }) {
 
           <div class="field">
             <label>Reserva de caja inicial</label>
-            <input id="ob-reserve" type="number" inputmode="decimal" placeholder="50" value="50" />
+            <input id="ob-reserve" type="text" inputmode="decimal" placeholder="50" value="50" />
             <p class="subtext mt8">El cambio que dejas en caja al empezar el día. Lo puedes ajustar luego en Config.</p>
           </div>
 

@@ -1,6 +1,6 @@
 import { DB } from '../db.js';
 import { state } from '../store.js';
-import { uid, money, toast, el, escapeHtml } from '../utils.js';
+import { uid, money, toast, el, escapeHtml, parseAmount } from '../utils.js';
 import { renderTopbar, emptyState } from '../ui.js';
 import { reloadSettings } from '../app.js';
 
@@ -13,7 +13,7 @@ export function render(container, { navigate }) {
       <div class="card mb16">
         <div class="field"><label>Nombre</label><input id="p-name" type="text" placeholder="Agua embotellada" /></div>
         <div class="grid-2">
-          <div class="field"><label>Precio</label><input id="p-price" type="number" inputmode="decimal" placeholder="0" /></div>
+          <div class="field"><label>Precio</label><input id="p-price" type="text" inputmode="decimal" placeholder="0" /></div>
           <div class="field"><label>Stock (opcional)</label><input id="p-stock" type="number" inputmode="numeric" placeholder="—" /></div>
         </div>
         <button class="btn btn-primary" id="p-add">+ Agregar producto</button>
@@ -38,12 +38,12 @@ export function render(container, { navigate }) {
         <div class="editable-list-item">
           <span class="e">🧴</span>
           <span class="name">${escapeHtml(p.name)} ${p.stock != null ? `<span class="subtext">· stock: ${p.stock}</span>` : ''}</span>
-          <input type="number" value="${p.price}" inputmode="decimal" />
+          <input type="text" value="${p.price}" inputmode="decimal" />
           <button class="del" data-action="del">🗑️</button>
         </div>
       `);
       row.querySelector('input').addEventListener('change', async (e) => {
-        p.price = Number(e.target.value) || 0;
+        p.price = parseAmount(e.target.value);
         await DB.saveSettings(s);
         await reloadSettings();
       });
@@ -60,7 +60,7 @@ export function render(container, { navigate }) {
 
   view.querySelector('#p-add').addEventListener('click', async () => {
     const name = view.querySelector('#p-name').value.trim();
-    const price = Number(view.querySelector('#p-price').value) || 0;
+    const price = parseAmount(view.querySelector('#p-price').value);
     const stockVal = view.querySelector('#p-stock').value;
     const stock = stockVal === '' ? null : Number(stockVal);
     if (!name) return toast('Ingresa un nombre', 'error');

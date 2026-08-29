@@ -1,7 +1,7 @@
 // Service worker de AutoNave MX.
 // IMPORTANTE: sube este número cada vez que cambies archivos para forzar
 // la actualización del caché en los dispositivos de los usuarios.
-const CACHE_VERSION = 'v13';
+const CACHE_VERSION = 'v14';
 const CACHE_NAME = `autonave-mx-${CACHE_VERSION}`;
 
 const ASSETS = [
